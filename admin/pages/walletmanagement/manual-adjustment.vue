@@ -27,38 +27,77 @@
 
                         </div>
                         <div class="card-body">
-                            <form action="">
+                            <center>
+                                <div v-for="(errorArray, idx) in notifmsg" :key="idx">
+                                    <div v-for="(allErrors, idx) in errorArray" :key="idx">
+                                        <span class="text-danger">{{ allErrors }} </span>
+                                    </div>
+                                </div>
+                            </center>
+                            <form @submit.prevent="saveManualAdjustment" id="formrest" class="forms-sample"
+                                enctype="multipart/form-data">
+
                                 <div class="row">
+                                    <div class="col-md-6">
+                                        <h4 v-if="currentBalance">
+                                            Current Balance : ${{ currentBalance }}
+                                        </h4>
+                                    </div>
+                                    <div class="col-md-6 text-right" v-if="calculateBalance">
+                                        <h4>${{ calculateBalance }} </h4>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+
                                     <div class="col-md-12">
                                         <div class="form-group mb-2">
-                                            <label for="">User  </label>
-                                            <input type="text" required v-model="user_id" placeholder="user" class="form-control">
-                                        </div>                     
+                                            <label for="">User Email </label>
+                                            <input type="text" :value="query" @input="onInput"
+                                                placeholder="Search for users by email" class="form-control" />
+
+                                            <span class="text-danger" v-if="errors.userId">{{ errors.userId[0]
+                                                }}</span>
+
+                                            <div v-if="users.length > 0" class="autocomplete-results">
+                                                <ul>
+                                                    <li v-for="user in users" :key="user.id" @click="selectUser(user)">
+                                                        {{ user.name }} [{{ user.email }}]
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                        </div>
+
                                         <div class="form-group mb-2">
-                                            <label for="status">Adjustment type <span class="text-danger" style="font-size: 12px;">(Required)</span></label>
-                                            <select name="" v-model="type" id="" class="form-control">
-                                                <option value="1">The effective amount is manually increased</option>
-                                                <option value="2">The effective amount is manually reduced</option>
-                                                <!-- <option value="3">The frozen amount is manually increased</option>
-                                                <option value="4">The frozen amount is manually reduced</option> -->
+                                            <label for="status">Adjustment type</label>
+                                            <select name="" v-model="manualAdjment.adjustment_type" id=""
+                                                class="form-control" @change="emptyAmunt">
+                                                <option value="1">The effective amount is manually increased (+)</option>
+                                                <option value="2">The effective amount is manually reduced (-)</option>
                                             </select>
-                                        </div>  
+                                            <span class="text-danger" v-if="errors.adjustment_type">{{
+                                                errors.adjustment_type[0]
+                                            }}</span>
+                                        </div>
                                         <div class="form-group mb-2">
-                                            <label for="">Adjustment amount<span class="text-danger" style="font-size: 12px;">(Required)</span> </label>
-                                            <input type="text" v-model="amount" required placeholder="Please enter the adjustment amount" class="form-control">
-                                        </div>                     
+                                            <label for="">Adjustment amount</label>
+                                            <input type="text" v-model="manualAdjment.adjustment_amount"
+                                                @keypress="isNumber($event)" @keyup="getAmuntCheck"
+                                                placeholder="Please enter the adjustment amount" class="form-control">
+                                            <span class="text-danger" v-if="errors.adjustment_amount">{{
+                                                errors.adjustment_amount[0]
+                                            }}</span>
+                                        </div>
                                         <div class="form-group mb-2">
-                                            <label for="status">Detailed remarks <span class="text-danger" style="font-size: 12px;">(Required)</span></label>
-                                            <select name="" v-model="remark" id="" class="form-control">
-                                                <option value="">Please select the note type</option>
-                                                <option value="">Store opening subsidy</option>
-                                                <option value="">Agency monthly salary</option>
-                                                <option value="">Promotional package discount</option>
-                                                <option value="">financial distribution</option>
-                                                <option value="">System adjustment</option>
-                                                <option value="">Agency weekly salary</option>
-                                            </select>
-                                        </div>                  
+                                            <label for="status">Detailed remarks</label>
+
+                                            <textarea class="form-control"
+                                                v-model="manualAdjment.detailed_remarks"></textarea>
+                                            <span class="text-danger" v-if="errors.detailed_remarks">{{
+                                                errors.detailed_remarks[0]
+                                            }}</span>
+                                        </div>
                                         <button type="submit" class="btn-primary w-100">Save</button>
 
                                     </div>
@@ -73,180 +112,194 @@
     </div>
 </template>
 <script setup>
-import { ref, watch, onMounted } from "vue";
-import axios from "axios";
+import { ref, reactive, onMounted } from 'vue';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useRouter } from 'vue-router';
 
 definePageMeta({
     middleware: 'is-logged-out',
 })
-
 const router = useRouter();
+const errors = ref({});
+const notifmsg = ref('');
 const loading = ref(false);
-const currentPage = ref(1);
-const pageSize = 10;
-const totalRecords = ref(0);
-const totalPages = ref(0);
-const productdata = ref([]);
-const searchQuery = ref(""); // Add a ref for the search query
-const selectedFilter = ref(1); // Add a ref for the search query
+const userId = ref('');
+const adjustmentAmount = ref('');
+const currentBalance = ref(0);
+const calculateBalance = ref(0);
+const manualAdjment = reactive({
+    query: '',
+    user_id: '',
+    adjustment_type: '',
+    adjustment_amount: '',
+    detailed_remarks: '',
+});
 
-const adjustmentData = ref([
-    'user_id',
-    'type',
-    'amount',
-    'remark'
-]);
+//Submit
+const saveManualAdjustment = () => {
+    
+    const formData = new FormData();
+    formData.append('userId', userId.value);
+    formData.append('query', manualAdjment.query);
+    formData.append('adjustment_type', manualAdjment.adjustment_type);
+    formData.append('adjustment_amount', manualAdjment.adjustment_amount);
+    formData.append('detailed_remarks', manualAdjment.detailed_remarks);
 
-const fetchData = async (page) => {
-    try {
-        loading.value = true;
-        const response = await axios.get(`/product/getProductList`, {
-            params: {
-                page: page,
-                pageSize: pageSize,
-                searchQuery: searchQuery.value, // Pass the search query parameter
-                selectedFilter: selectedFilter.value, // Pass the search query parameter
-            },
+    const headers = {
+        'Content-Type': 'multipart/form-data'
+    };
+    axios.post('/user/sendUserManualAdjst', formData, { headers })
+        .then((res) => {
+            document.getElementById('formrest').reset();
+            success_noti();
+           // query.value= "",
+            currentBalance.value= "";
+            calculateBalance.value = "";
+            manualAdjment.adjustment_amount = "";
+            manualAdjment.detailed_remarks = "";
+
+            router.push('/walletmanagement/manual-adjustment');
+        }).catch(error => {
+            if (error.response && error.response.status === 422) {
+                errors.value = error.response.data.errors;
+            } else {
+                // Handle other types of errors here
+                console.error('An error occurred:', error);
+            }
         });
-        productdata.value = response.data.data;
-        totalRecords.value = response.data.total_records;
-        totalPages.value = response.data.total_pages;
-        currentPage.value = response.data.current_page;
+};
+
+//Validation 
+
+const emptyAmunt = () => {
+
+    calculateBalance.value = "";
+    manualAdjment.adjustment_amount = "";
+}
+
+
+// Function to allow only numbers in the input
+const getAmuntCheck = async () => {
+    console.log("current Balance: " + currentBalance.value);
+    console.log("input amount : " + manualAdjment.adjustment_amount);
+
+    if (manualAdjment.adjustment_type == 1) {
+        const result = parseFloat(currentBalance.value) + parseFloat(manualAdjment.adjustment_amount);
+        calculateBalance.value = result;
+    }
+
+    if (manualAdjment.adjustment_type == 2) {
+        const result = parseFloat(currentBalance.value) - parseFloat(manualAdjment.adjustment_amount);
+        calculateBalance.value = result;
+    }
+
+}
+
+const isNumber = (evt) => {
+    evt = (evt) ? evt : window.evt;
+    var charCode = (evt.which) ? evt.which : evt.keyCode;
+    if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
+        evt.preventDefault();;
+    } else {
+        return true;
+    }
+
+}
+const success_noti = () => {
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 1000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+    Toast.fire({
+        icon: "success",
+        title: "Manual Adjustment Send..."
+    });
+};
+
+//Autocomlete
+// Reactive state variables
+const query = ref('');
+const users = ref([]);
+
+// Function to fetch users from the API
+const fetchUsers = async (searchQuery) => {
+    if (searchQuery.length < 1) {
+        users.value = []; // Clear users if the query is less than 3 characters
+        return;
+    }
+
+    try {
+        const response = await axios.get(`/user/autocompleteUser?query=${searchQuery}`);
+        users.value = response.data; // Update users with the result
     } catch (error) {
-        // Handle error
-    } finally {
-        loading.value = false;
+        console.error('Error fetching users:', error);
+        users.value = []; // Clear users on error
     }
 };
 
-onMounted(() => {
-    fetchData(currentPage.value);
-});
-
-// Watch for changes in current page and fetch data accordingly
-watch(currentPage, (newPage) => {
-    fetchData(newPage);
-});
-
-// Define a method to handle editing
-const edit = (id) => {
-
-    router.push({
-        path: '/products/edit',
-        query: {
-            parameter: id
-        }
-    });
-
-    // Your logic for editing goes here
-    console.log('Editing item with id:', id);
+// Event handler for input changes
+const onInput = (event) => {
+    query.value = event.target.value; // Update query value
 };
 
-// Define a method to handle deleting
-const deleteProduct = (id) => {
-    // Your logic for deleting goes here
-    console.log('Deleting item with id:', id);
-};
-
-// Define a method to handle previewing
-const preview = (id) => {
-    router.push({
-        path: '/products/preview',
-        query: {
-            parameter: id
-        }
-    });
-    console.log('Previewing item with id:', id);
-};
-
-// Compute the range of displayed pages
-const displayedPages = computed(() => {
-    const maxDisplayedPages = 10; // Maximum number of displayed pages
-    const startPage = Math.max(
-        1,
-        currentPage.value - Math.floor(maxDisplayedPages / 2)
-    );
-    const endPage = Math.min(
-        totalPages.value,
-        startPage + maxDisplayedPages - 1
-    );
-    return Array.from(
-        { length: endPage - startPage + 1 },
-        (_, i) => startPage + i
-    );
+// Watch the query for changes and fetch users
+watch(query, (newQuery) => {
+    fetchUsers(newQuery);
 });
 
+const getSelectedUsersInfo = async (userid) => {
 
-const filterData = () => {
-    fetchData(1); // Reset to first page when search query changes
+    try {
+        const response = await axios.get(`/user/getUserWiseCurrentBalance?userid=${userid}`);
+        // console.log("response:" + response.data);
+        currentBalance.value = response.data; // Update users with the result
+
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        users.value = []; // Clear users on error
+    }
+}
+
+// Function to handle user selection
+const selectUser = (user) => {
+    query.value = user.name; // Replace input with selected user
+    userId.value = user.id
+    getSelectedUsersInfo(user.id);
+    // console.log("-------" + user.id);
+    users.value = []; // Clear suggestions
+    // Perform additional actions like setting user ID
 };
 </script>
 
-
-<style>
-.pagination {
-    display: inline-block;
-    text-align: center;
+<style scoped>
+.autocomplete-results {
+    border: 1px solid #ddd;
+    background-color: #fff;
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
 }
 
-.pagination button {
-    margin: 0 5px;
-    padding: 5px 10px;
-    background-color: #2f2f2f;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
+.autocomplete-results ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.autocomplete-results li {
+    padding: 8px;
     cursor: pointer;
 }
 
-.pagination button:hover {
-    background-color: #0056b3;
-}
-
-.pagination button[disabled] {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
-.card-body {
-    -ms-flex: 1 1 auto;
-    flex: 1 1 auto;
-    min-height: 1px;
-    padding: 0.5rem;
-}
-
-.btnSize {
-    font-size: 12px;
-    padding: 3px;
-}
-
-/* Table */
-.table-wrapper {
-    width: 100%;
-    /* max-width: 500px; */
-    overflow-x: auto;
-}
-
-.table td,
-.table th {
-    padding: .2rem;
-    vertical-align: top;
-    border-top: 1px solid #dae2ea;
-}
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-th,
-td {
-    padding: 1px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-tr:hover {
-    background-color: rgb(221, 221, 221);
+.autocomplete-results li:hover {
+    background-color: #f0f0f0;
 }
 </style>

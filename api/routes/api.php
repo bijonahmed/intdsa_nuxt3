@@ -75,11 +75,13 @@ Route::group([
     'prefix' => 'user'
 ], function () {
     Route::get('getInviteCode', [UserController::class, 'getInviteCode']);
+    Route::get('autocompleteUser', [UserController::class, 'autocompleteUser']);
     Route::get('allUsers', [UserController::class, 'AllUsersList']);
     Route::get('allAgent', [UserController::class, 'allAgent']);
     Route::get('allAdmin', [UserController::class, 'allAdmin']);
     Route::get('allSuperAdmin', [UserController::class, 'allSuperAdmin']);
     Route::get('findUserDetails', [UserController::class, 'findUserDetails']);
+    Route::get('getUserWiseCurrentBalance', [UserController::class, 'getUserWiseCurrentBalance']);
     Route::get('allpartners', [UserController::class, 'AllPartnerList']);
     Route::get('allemployeeType', [UserController::class, 'allemployeeType']);
     Route::get('employeeRow/{id}', [UserController::class, 'employeeRow']);
@@ -102,6 +104,7 @@ Route::group([
     Route::post('cancelAccount', [UserController::class, 'cancelAccount']);
 
     Route::post('saveUser', [UserController::class, 'saveUser']);
+    Route::post('sendUserManualAdjst', [UserController::class, 'sendUserManualAdjst']);
     Route::post('updateUser', [UserController::class, 'updateUser']);
     Route::post('updateUserProfileImg', [UserController::class, 'updateUserProfileImg']);
     Route::post('assignToUser', [UserController::class, 'assignToUser']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\ManualAdjustment;
 use Illuminate\Http\Request;
 use Auth;
 use Validator;
@@ -255,17 +256,26 @@ class UserController extends Controller
         ], 200);
     }
 
+
+
+    public function getUserWiseCurrentBalance(Request $request)
+    {
+        $userid = $request->userid;
+        $response       = app('App\Http\Controllers\Dropshipping\DropUserController')->getCurrentBalanceCheckAdminIndivUser($userid);
+        $currentBalance = $response instanceof JsonResponse ? $response->getData(true)['currentbalance'] : 0;
+        return response()->json($currentBalance);
+    }
+
     public function findUserDetails(Request $request)
     {
 
         $response       = app('App\Http\Controllers\Dropshipping\DropUserController')->getCurrentBalanceCheckAdminIndivUser($request->id);
         $currentBalance = $response instanceof JsonResponse ? $response->getData(true)['current_balance'] : 0;
-        
+
         $item = User::join('rule', 'users.role_id', '=', 'rule.id')
-            ->select('users.doc_file','users.created_at', 'users.updated_at', 'lastlogin_country', 'register_ip', 'lastlogin_ip', 'users.ref_id', 'users.telegram', 'users.whtsapp', 'users.role_id', 'users.id', 'users.name', 'users.email', 'users.phone_number', 'users.show_password', 'users.status', 'rule.name as rulename')
+            ->select('users.doc_file', 'users.created_at', 'users.updated_at', 'lastlogin_country', 'register_ip', 'lastlogin_ip', 'users.ref_id', 'users.telegram', 'users.whtsapp', 'users.role_id', 'users.id', 'users.name', 'users.email', 'users.phone_number', 'users.show_password', 'users.status', 'rule.name as rulename')
             ->where('users.id', $request->id)
             ->first();
-
 
         $telegram       = !empty($item->telegram) ? $item->telegram : "None";
         $phone          = !empty($item->phone_number) ? $item->phone_number : "";
@@ -297,9 +307,9 @@ class UserController extends Controller
             'updated_at'        => date("Y-M-d H:i:s", strtotime($item->updated_at)),
             'phone_number'      => $item->phone_number,
             'show_password'     => $item->show_password,
-            'u_details_avail_balance'  => '$'.$currentBalance,
-            'u_details_frozenAmount'  => '$'. 0,
-            'u_details_kyc'     => !empty($item->doc_file) ? url($item->doc_file) : "",            
+            'u_details_avail_balance'  => '$' . $currentBalance,
+            'u_details_frozenAmount'  => '$' . 0,
+            'u_details_kyc'     => !empty($item->doc_file) ? url($item->doc_file) : "",
             'status'            => $status,
         ];
         return response()->json($data);
@@ -457,6 +467,17 @@ class UserController extends Controller
             'total_pages' => $paginator->lastPage(),
             'total_records' => $paginator->total(),
         ], 200);
+    }
+
+    public function autocompleteUser(Request $request)
+    {
+
+        $query = $request->query('query', ''); // Get the 'query' parameter from the request
+        // Retrieve users whose names contain the search query, case-insensitive
+        $users = User::where('email', 'LIKE', "%{$query}%")->get();
+
+        return response()->json($users); // Return the result as JSON
+
     }
 
     public function AllUsersList(Request $request)
@@ -812,6 +833,39 @@ class UserController extends Controller
         DB::table('users')->where('id', $request->id)->update($data);
         $response = [
             'message' => 'User register successfully insert UserID:',
+        ];
+        return response()->json($response);
+    }
+
+
+
+
+    public function sendUserManualAdjst(Request $request)
+    {
+
+        //dd($request->all());
+        $validator = Validator::make($request->all(), [
+            'userId'             => 'required',
+            'adjustment_type'   => 'required',
+            'adjustment_amount' => 'required',
+            'detailed_remarks'  => 'required',
+
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+        $data = array(
+            'user_id'           => !empty($request->userId) ? $request->userId : "",
+            'adjustment_type'   => !empty($request->adjustment_type) ? $request->adjustment_type : "",
+            'adjustment_amount' => !empty($request->adjustment_amount) ? $request->adjustment_amount : "",
+            'detailed_remarks'  => !empty($request->detailed_remarks) ? $request->detailed_remarks : "",
+            // 'status'        => $request->status,
+            'entry_by'      => $this->userid,
+        );
+
+        $last_id = ManualAdjustment::insertGetId($data);
+        $response = [
+            'message' => 'Adjustment Done:' . $last_id
         ];
         return response()->json($response);
     }
@@ -1625,7 +1679,6 @@ class UserController extends Controller
         return response()->json($response);
     }
 
-
     public function withdrawPasswordByAdmin(Request $request)
     {
 
@@ -1645,7 +1698,6 @@ class UserController extends Controller
         $response = "Password successfully changed!";
         return response()->json($response);
     }
-
 
     public function withdrawPasswordPartner(Request $request)
     {

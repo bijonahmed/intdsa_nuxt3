@@ -9,6 +9,7 @@ use Validator;
 use Helper;
 use App\Models\Holiday;
 use App\Models\User;
+use App\Models\ManualAdjustment;
 use App\Models\ProductAttributeValue;
 use App\Models\ProductVarrientHistory;
 use App\Models\Categorys;
@@ -431,14 +432,17 @@ class DropUserController extends Controller
 
     public function getCurrentBalance()
     {
+          // WORNING MESSAGES IF YOU CHANGE INSIDE METHOD PLEAE INSITANT CHANGE THIS METHOD: getCurrentBalanceCheckAdminIndivUser
+        $user_id = $this->userid;
+        $manAdjstSum = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',1)->sum('adjustment_amount');
+        $manAdjstMinus = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',2)->sum('adjustment_amount');
 
-        // WORNING MESSAGES IF YOU CHANGE INSIDE METHOD PLEAE INSITANT CHANGE THIS METHOD: getCurrentBalanceCheckAdminIndivUser
-        $depositAmt      = Deposit::where('user_id', $this->userid)->where('status', 1)->sum('receivable_amount');
-        $withdrawAmt     = Withdraw::where('user_id', $this->userid)->where('status', 1)->sum('receivable_amount');
-        $expense_history = ExpenseHistory::where('user_id', $this->userid)->sum('operation_amount');
+        $depositAmt       = Deposit::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
+        $withdrawAmt      = Withdraw::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
+        $expense_history  = ExpenseHistory::where('user_id', $user_id)->sum('operation_amount');
         // echo "deposit amount: $depositAmt ----- withdrawamt :$withdrawAmt: expense history: $expense_history";
         //exit;
-        $result          = $depositAmt - $withdrawAmt - $expense_history;
+        $result          = $depositAmt - $withdrawAmt - $expense_history + $manAdjstSum - $manAdjstMinus;
         $data['current_balance'] = number_format($result, 2); // Formated Balance 
         $data['currentbalance']  = $result; //Without Format balance 
         //available_balance
@@ -449,12 +453,17 @@ class DropUserController extends Controller
 
     public function getCurrentBalanceCheckAdminIndivUser($user_id)
     {
-        $depositAmt      = Deposit::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
-        $withdrawAmt     = Withdraw::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
-        $expense_history = ExpenseHistory::where('user_id', $user_id)->sum('operation_amount');
+
+        $manAdjstSum      = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',1)->sum('adjustment_amount');
+        $manAdjstMinus    = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',2)->sum('adjustment_amount');
+
+        $depositAmt       = Deposit::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
+        $withdrawAmt      = Withdraw::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
+        $expense_history  = ExpenseHistory::where('user_id', $user_id)->sum('operation_amount');
+     
         // echo "deposit amount: $depositAmt ----- withdrawamt :$withdrawAmt: expense history: $expense_history";
         //exit;
-        $result          = $depositAmt - $withdrawAmt - $expense_history;
+        $result          = $depositAmt - $withdrawAmt - $expense_history + $manAdjstSum - $manAdjstMinus;
         $data['current_balance'] = number_format($result, 2); // Formated Balance 
         $data['currentbalance']  = $result; //Without Format balance 
         //available_balance

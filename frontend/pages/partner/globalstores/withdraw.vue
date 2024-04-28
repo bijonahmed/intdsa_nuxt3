@@ -20,8 +20,8 @@
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><nuxt-link
                                                 to="/partner/dashboard">Dashboard</nuxt-link></li>
-                                        <li class="breadcrumb-item"><nuxt-link
-                                                to="/partner/globalstores/myWallet">My Wallet</nuxt-link></li>
+                                        <li class="breadcrumb-item"><nuxt-link to="/partner/globalstores/myWallet">My
+                                                Wallet</nuxt-link></li>
                                         <li class="breadcrumb-item active" aria-current="page">Withdraw</li>
                                     </ol>
                                 </nav>
@@ -43,14 +43,13 @@
                                 <div class="s_content">
                                     <div class="row" v-if="orderStatus == 1">
                                         <div class="col-md-6 m-auto">
-
                                             <!-- <center><button type="button" @click="depositList">Process</button></center> -->
                                             <center><span class="deposit_error" style="color: red;"></span></center>
                                             <center><span class="withdrawal_mini_error" style="color: red;"></span>
                                             </center>
 
                                             <form @submit.prevent="saveData()">
-                                                <p class="badge_"><i class="fa-solid fa-circle-exclamation"></i>Minimum
+                                                <p class="badge_"><i class="fa-solid fa-circle-exclamation"></i>Minimum 
                                                     withdraw ${{ setting.withdraw_minimum_amount }}</p>
 
                                                 <div class="form_group">
@@ -117,7 +116,8 @@
 
                                     <div v-else>
                                         <center>
-                                            <h4>You have not completed any orders yet. Please complete min 1 order for withdrawal</h4>
+                                            <h4>You have not completed any orders yet. Please complete min 1
+                                                order for withdrawal</h4>
                                         </center>
                                     </div>
                                 </div>
