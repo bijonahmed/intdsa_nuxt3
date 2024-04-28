@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Seller Panel </title>
+    <!-- bootstrap 5.3    -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- fontawsome cdn  -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="css/adminlte.min.css">
+    <!-- overlayScrollbars -->
+    <link rel="stylesheet" href="plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+    <link rel="stylesheet" href="css/panel.style.css">
+
+</head>
+
+<div class="wrapper">
+
+    <!-- mobile header part start here  -->
+    <section class="mobile_header">
+        <ul>
+            <li>
+                <a href="index.html"><img src="images/LOGO_1.png" alt="" class="img-fluid logo_img"></a>
+            </li>
+            <li>
+                <a href="myWallet.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+                        <path
+                            d="M206.783-100.782q-44.305 0-75.153-30.848-30.848-30.848-30.848-75.153v-546.434q0-44.305 30.848-75.153 30.848-30.848 75.153-30.848h546.434q44.305 0 75.153 30.848 30.848 30.848 30.848 75.153H521.13q-67.608 0-110.978 43.369-43.369 43.37-43.369 110.978V-360q0 67.609 43.369 110.413 43.37 42.804 110.978 42.804h338.088q0 44.305-30.848 75.153-30.848 30.848-75.153 30.848H206.783ZM521.13-280q-32.434 0-56.782-23.783Q440-327.565 440-360v-238.87q0-32.434 24.348-56.782T521.13-680h296.958q32.435 0 56.782 24.348 24.348 24.348 24.348 56.782V-360q0 32.435-24.348 56.217Q850.523-280 818.088-280H521.13ZM640-420q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Z" />
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="event.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+                        <path
+                            d="M140.782-166.783v-315.345q-33 0-56.5-23.5t-23.5-56.5v-104.871q0-44.305 30.848-75.153 30.848-30.849 75.153-30.849h111.608q-3.87-9-5.37-18.635-1.5-9.635-1.5-20.234 0-53.392 37.473-90.37T400-939.218q22.435 0 42.717 7.087Q463-925.045 480-911.175q17-14.304 37.565-21.174 20.565-6.869 43-6.869 53.298 0 90.606 36.978 37.308 36.978 37.308 90.37 0 10.689-1.718 19.92-1.717 9.232-5.152 18.949h111.608q44.305 0 75.153 30.849 30.848 30.848 30.848 75.153v104.871q0 33-23.5 56.5t-56.5 23.5v315.345q0 44.305-30.848 75.153-30.848 30.848-75.153 30.848H246.783q-44.305 0-75.153-30.848-30.848-30.848-30.848-75.153Zm419.783-684.522q-17 0-28.5 11.256-11.5 11.257-11.5 27.896 0 16.64 11.5 27.896t28.5 11.256q17 0 28.5-11.256t11.5-27.896q0-16.639-11.5-27.896-11.5-11.256-28.5-11.256ZM360-812.153q0 16.64 11.5 27.896t28.5 11.256q17 0 28.5-11.256t11.5-27.896q0-16.639-11.5-27.896-11.5-11.256-28.5-11.256t-28.5 11.256Q360-828.792 360-812.153ZM166.783-666.999v78.869h265.869v-78.869H166.783Zm265.869 500.781v-315.91H246.783v315.91h185.869Zm94.696 0h185.869v-315.91H527.348v315.91ZM793.782-588.13v-78.869H527.348v78.869h266.434Z" />
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="#support">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+                        <path
+                            d="M480-100.782q-22.087 0-37.544-15.456-15.457-15.457-15.457-37.544 0-22.088 15.457-37.544 15.457-15.457 37.544-15.457l276.043.565v-285.13q0-111.913-81.217-188.043-81.217-76.13-194.826-76.13t-194.826 76.13q-81.217 76.13-81.217 188.043l2.826 210.218q.565 22.087-15.174 37.826-15.739 15.739-37.827 15.739h-2.826q-37.522 0-63.848-26.043-26.326-26.044-26.326-63.566v-89.609q0-21.565 9.934-40.348 9.935-18.782 27.805-31.478l.739-28.129q3.478-74.783 35.26-139.001 31.783-64.218 83.24-111.74 51.456-47.522 119.174-74.63Q404.652-859.218 480-859.218t142.849 27.109q67.5 27.108 119.174 74.413 51.674 47.305 83.239 111.805 31.566 64.5 35.478 139.283l.739 27.129q18.435 11.261 28.087 30.392 9.652 19.13 9.652 40.261v93.696q0 23.391-8.804 45.065t-28.935 33.5v30.347q0 43.74-30.848 74.588-30.848 30.848-74.588 30.848H480ZM366.783-385.304q-18.131 0-30.478-12.347-12.348-12.348-12.348-29.914 0-17.565 12.348-29.913 12.347-12.348 30.478-12.348 18.13 0 30.478 12.348 12.348 12.348 12.348 29.913 0 17.566-12.348 29.914-12.348 12.347-30.478 12.347Zm226.434 0q-18.13 0-30.478-12.347-12.348-12.348-12.348-29.914 0-17.565 12.348-29.913 12.348-12.348 30.478-12.348 18.131 0 30.478 12.348 12.348 12.348 12.348 29.913 0 17.566-12.348 29.914-12.347 12.347-30.478 12.347ZM239.87-477.262Q234-578.174 306.413-647.674q72.413-69.5 175.587-69.5 90.13 0 158.761 54.239 68.63 54.239 77.543 141.109-85.913-1-161.282-40.804-75.37-39.804-117.5-114.456-18.826 73.782-72.87 126.108-54.043 52.326-126.782 73.716Z" />
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <div class="d-flex align-items-center">
+                    <ul class="lang" style="list-style: none;padding: 3px 5px;; margin: 0; margin-right: 5px;">
+                        <li style="min-width: 68px;">
+                            <a class="nav-link active" aria-current="page">
+                                <img style="width: 22px;height: 22px;" src="images/lang_en.png">
+                                US <span class="am-icon-caret-down"></span>
+                            </a>
+                            <ul class="pull_down">
+                                <li>
+                                    <a href="index.html">
+                                        <div style="display: flex;" bis_skin_checked="1">
+                                            <img style="margin-right: 10px;width: 22px;height: 22px;"
+                                                src="images/lang_en.png">
+                                            US
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </section>
+    <!-- mobile header part end here  -->
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
+            </li>
+        </ul>
+
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+            <!-- Navbar Search -->
+            <li class="nav-item">
+                <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                    <i class="fas fa-search"></i>
+                </a>
+                <div class="navbar-search-block">
+                    <form class="form-inline">
+                        <div class="input-group input-group-sm">
+                            <input class="form-control form-control-navbar" type="search" placeholder="Search"
+                                aria-label="Search">
+                            <div class="input-group-append">
+                                <button class="btn btn-navbar" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <button class="btn btn-navbar" type="button" data-widget="navbar-search">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <!-- navbar -->
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <div class="sidebar">
+            <div class="user-panel mt-1 pb-1  d-flex justify-content-between">
+                <div class="d-flex">
+                    <div class="image">
+                        <!-- <img src="images/1.jpg" class="img-circle elevation-2" alt="User"> -->
+                        <i class="fa-solid fa-circle-user"></i>
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block">User name</a>
+                    </div>
+                </div>
+                <button type="button" class="bg-transparent border-0 text-white"> <i
+                        class=" nav-icon fa-solid fa-sign-out-alt"></i></button>
+            </div>
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                    data-accordion="false">
+                    <li class="nav-item menu-open">
+                        <a href="#" class="nav-link">
+                            <i class="fa-solid fa-shop-lock"></i>
+                            <p>
+                                Store management
+                                <i class="right fa-solid fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="myStore.html" class="nav-link ">
+                                    <i class="nav-icon fa-solid fa-store-slash"></i>
+                                    <p>My store</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="activeService.html" class="nav-link ">
+                                    <i class="nav-icon fa-solid fa-store"></i>
+                                    <p>Active service</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="index.html" class="nav-link">
+                                    <i class="nav-icon fa-solid fa-boxes-stacked"></i>
+                                    <p>Product Center</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item menu-open">
+                        <a href="#" class="nav-link">
+                            <i class=" nav-icon fa-solid fa-database"></i>
+                            <p>Account Management
+                                <i class="right fa-solid fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="personalData.html" class="nav-link ">
+                                    <i class="nav-icon fa-regular fa-id-card"></i>
+                                    <p>Profile </p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="bankList.html" class="nav-link">
+                                    <i class="nav-icon fa-solid fa-building-columns"></i>
+                                    <p>Withdrawal method</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="myWallet.html" class="nav-link">
+                                    <i class="nav-icon fa-solid fa-wallet"></i>
+                                    <p>Wallet</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="accountSecurity.html" class="nav-link ">
+                                    <i class="nav-icon fa-solid fa-shield-halved"></i>
+                                    <p>Account Security</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="myMassage.html" class="nav-link">
+                                    <i class="nav-icon fa-regular fa-message"></i>
+                                    <p>Massages</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item menu-open">
+                        <a href="#" class="nav-link">
+                            <i class=" nav-icon fa-solid fa-chart-column"></i>
+                            <p>
+                                Operation Center
+                                <i class="right fa-solid fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="orderList.html" class="nav-link ">
+                                    <i class="nav-icon fa-regular fa-file-lines"></i>
+                                    <p>Order List</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="report.html" class="nav-link ">
+                                    <i class=" nav-icon fa-solid fa-chart-line"></i>
+                                    <p>Report</p>
+                                </a>
+                            </li>
+                            <!-- <li class="nav-item ">
+                                <a href="fund.html" class="nav-link ">
+                                    <i class="nav-icon fa-solid fa-filter-circle-dollar"></i>
+                                    <p>Operating Fund</p>
+                                </a>
+                            </li> -->
+                            <li class="nav-item ">
+                                <a href="partners.html" class="nav-link ">
+                                    <i class="nav-icon fa-solid fa-handshake-angle"></i>
+                                    <p>Partners</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item menu-open">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fa-solid fa-elevator"></i>
+                            <p>
+                                Community
+                                <i class="right fa-solid fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview menu-open">
+                            <li class="nav-item">
+                                <a href="event.html" class="nav-link">
+                                    <i class="nav-icon fa-solid fa-calendar-days "></i>
+                                    <p>Event</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="faq.html" class="nav-link">
+                                    <i class="nav-icon fa-solid fa-person-circle-question"></i>
+                                    <p>FAQ</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="terms-service.html" class="nav-link">
+                                    <i class=" nav-icon fa-solid fa-file-contract"></i>
+                                    <p>Service Agreement</p>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </li>
+
+                </ul>
+            </nav>
+            <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
+    </aside>
+
+    <!-- Content section start here  -->
+    <div class="content-wrapper">
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- content part start here  -->
+                        <div class="s_content">
+                            <!-- no data  -->
+                            <div class="no_data">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <p>No withdrawal method is set, please bind the withdrawal method first! <a href="bankList.html" type="button">Add withdrawal address</a></p>
+                            </div>
+                            <!-- if data  -->
+                            <div class="countDash">
+                                <div class="dash_box">
+                                    <div class="dash_C">
+                                        <h1>$1,02,890.00</h1>
+                                        <h3>Available ammount</h3>
+                                        <p class="text-start">Available ammount for operating transaction</p>
+                                    </div>
+                                </div>
+                                <div class="dash_box">
+                                    <div class="dash_C">
+                                        <h1>$1,02,890.00</h1>
+                                        <h3>In transaction</h3>
+                                        <p class="text-start">Generally in pre transaction, Withdrawal, Freeze the corresponding amount when the transaction is not
+                                            completed</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- list part start here  -->
+                            <div class="tab_btns">
+                                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                      <button class="nav-link active" id="pills-tab_one-tab" data-bs-toggle="pill" data-bs-target="#pills-tab_one" type="button" role="tab" aria-controls="pills-tab_one" aria-selected="true">Fund List </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                      <button class="nav-link" id="pills-tab_two-tab" data-bs-toggle="pill" data-bs-target="#pills-tab_two" type="button" role="tab" aria-controls="pills-tab_two" aria-selected="false">Holding records</button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <!-- tabs part start here  -->
+                              <div class="tab-content" id="pills-tabContent">
+                                <div class="tab-pane fade show active" id="pills-tab_one" role="tabpanel" aria-labelledby="pills-tab_one-tab">
+                                    <!-- first tab  -->
+                                    <table class="table" style="    table-layout: fixed;
+                                    width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th>Product Name</th>
+                                                <th>Number of days</th>
+                                                <th>Daily invesment</th>
+                                                <th>Operation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Operation center </td>
+                                                <td>1</td>
+                                                <td>1</td>
+                                                <td class="btn-group">
+                                                    <a href="#" type="button" class="btn-secondary px-md-3 py-1 px-1">Details</a>
+                                                    <a href="#" type="button" class="btn-danger px-md-3 py-1 px-1">Buy</a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="pagination_ justify-content-md-between justify-content-center">
+                                        <div class="btn-group align-items-center d-md-block d-none">
+                                            <p>Showing 1 to 10 of 30 (5 Pages)</p>
+        
+                                        </div>
+                                        <nav aria-label="Page navigation example">
+                                            <ul class="pagination">
+                                                <li class="page-item">
+                                                    <a class="page-link" href="#" aria-label="Previous">
+                                                        <span aria-hidden="true">&laquo;</span>
+                                                    </a>
+                                                </li>
+                                                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="#" aria-label="Next">
+                                                        <span aria-hidden="true">&raquo;</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="pills-tab_two" role="tabpanel" aria-labelledby="pills-tab_two-tab">
+                                    <!-- second tab  -->
+                                    <div class="st_filter mb-2">
+                                        <form action="">
+                                            <div class="d-flex align-items-center">
+                                                <select name="" class="form-control w-50" id="">
+                                                    <option value="">Status type</option>
+                                                    <option value="">In progress</option>
+                                                    <option value="">Satalement complete</option>
+                                                </select>
+                                                <button type="button" class="btn mx-1 btn-primary ">Search</button>
+                                                <button type="button" class="btn btn-outline-secondary ">Clear</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="table_section">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Fund name </th>
+                                                    <th>Days</th>
+                                                    <th>Daily returns(%) </th>
+                                                    <th>Ammount held</th>
+                                                    <th>Pre-earnings</th>
+                                                    <th>state</th>
+                                                    <th>Purches time</th>
+                                                    <th>Date of expiry</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Operation center </td>
+                                                    <td>1</td>
+                                                    <td>1</td>
+                                                    <td>1</td>
+                                                    <td>1</td>
+                                                    <td>1</td>
+                                                    <td>1</td>
+                                                    <td>1-5-24</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="pagination_ justify-content-md-between justify-content-center">
+                                        <div class="btn-group align-items-center d-md-block d-none">
+                                            <p>Showing 1 to 10 of 30 (5 Pages)</p>
+        
+                                        </div>
+                                        <nav aria-label="Page navigation example">
+                                            <ul class="pagination">
+                                                <li class="page-item">
+                                                    <a class="page-link" href="#" aria-label="Previous">
+                                                        <span aria-hidden="true">&laquo;</span>
+                                                    </a>
+                                                </li>
+                                                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="#" aria-label="Next">
+                                                        <span aria-hidden="true">&raquo;</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <!-- content part end here  -->
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- main content part end here  -->
+    </div>
+    <!-- content section end here  -->
+
+    <!-- mobile footer part start here  -->
+    <section class="mobileFooter">
+        <ul>
+            <li>
+                <a href="orderList.html" class="mobileFlink">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+                        <path
+                            d="m684.217-230.478-13.043-13.609q-10.696-10.695-25.457-10.413-14.761.283-25.457 10.979-10.695 10.695-10.695 24.956t10.695 24.957l36.174 36.174q12.083 11.826 28.194 11.826 16.111 0 27.937-11.826l93.609-92.174q10.696-10.646 10.696-25.432 0-14.786-10.696-25.481-10.696-10.696-25.457-10.413-14.761.282-25.457 10.413l-71.043 70.043Zm-11-361.043q17 0 28.5-11.5t11.5-28.5q0-17-11.5-28.5t-28.5-11.5H286.783q-17 0-28.5 11.5t-11.5 28.5q0 17 11.5 28.5t28.5 11.5h386.434Zm40 563.956q-83 0-141.5-58.5t-58.5-141.5q0-83 58.5-141.5t141.5-58.5q83 0 141.5 58.5t58.5 141.5q0 83-58.5 141.5t-141.5 58.5ZM206.783-857.523h546.434q43.726 0 74.863 31.138 31.138 31.138 31.138 74.864v285.653q-32.522-20.783-69.522-31.24-37-10.457-75.914-10.457v-10.739H286.783q-17 0-28.5 11.5t-11.5 28.5q0 17 11.5 28.5t28.5 11.5h242.869q-17.626 15.482-32.661 33.697-15.034 18.216-27.165 39.52H286.783q-17 0-28.5 11.5t-11.5 28.5q0 17 11.5 28.5t28.5 11.5h152.26q-3.695 14.522-5.326 28.826-1.63 14.305-1.63 30.392 0 45.957 14.326 88.696 14.326 42.74 42.413 79.435-7.261.435-14.456-1.782-7.196-2.218-12.327-7.348L435.13-93.781q-7.695-7.696-18.521-7.696-10.827 0-18.522 7.696l-26.348 26.348q-7.696 7.695-18.522 7.695-10.826 0-18.522-7.695l-26.347-26.348q-7.696-7.696-18.522-7.696-10.827 0-18.522 7.696l-26.913 26.348q-7.696 7.695-18.522 7.695-10.826 0-18.522-7.695l-25.782-25.783q-8.159-8.261-19.036-8.261-10.878 0-18.574 8.261l-25.217 25.783q-1.13 1.695-17.956 9v-693.088q0-43.726 31.138-74.864 31.137-31.138 74.863-31.138Z" />
+                    </svg>
+                    <p>Orders</p>
+                </a>
+            </li>
+            <li>
+                <a href="activeService.html" class="mobileFlink">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+                        <path
+                            d="M166.783-140.782q-44.305 0-75.153-30.848-30.848-30.848-30.848-75.153v-466.434q0-44.305 30.848-75.153 30.848-30.848 75.153-30.848h626.434q44.305 0 75.153 30.848 30.848 30.848 30.848 75.153v466.434q0 44.305-30.848 75.153-30.848 30.848-75.153 30.848H166.783ZM400-400H280q-17 0-28.5 11.5T240-360q0 17 11.5 28.5T280-320h40q0 17 11.5 28.5T360-280q17 0 28.5-11.5T400-320h40q17 0 28.5-11.5T480-360v-120q0-17-11.5-28.5T440-520H320v-40h120q17 0 28.5-11.5T480-600q0-17-11.5-28.5T440-640h-40q0-17-11.5-28.5T360-680q-16 0-22.5 14.5T320-640h-40q-17 0-28.5 11.5T240-600v120q0 17 11.5 28.5T280-440h120v40Zm249.261 80.739 48.087-48.087q6.695-6.695 3.347-14.674Q697.348-390 688.087-390h-96.174q-9.261 0-12.608 7.978-3.348 7.979 3.347 14.674l48.087 48.087q4.131 4.131 9.261 4.131 5.13 0 9.261-4.131ZM591.913-560h96.174q9.261 0 12.608-7.978 3.348-7.979-3.347-14.674l-48.087-48.087q-4.131-4.131-9.261-4.131-5.13 0-9.261 4.131l-48.087 48.087q-6.695 6.695-3.347 14.674Q582.652-560 591.913-560Z" />
+                    </svg>
+                    <p>Services</p>
+                </a>
+            </li>
+            <li>
+                <a href="report.html" class="mobileFlink">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+                        <path
+                            d="M158.87-106.999q-21.522 0-36.697-15.174-15.174-15.175-15.174-36.697v-46.217q0-21.522 15.174-36.696 15.175-15.174 36.697-15.174 21.521 0 36.413 15.174 14.891 15.174 14.891 36.696v46.783q0 21.522-14.891 36.413-14.892 14.892-36.413 14.892Zm160.565 0q-22.087 0-36.979-14.892-14.891-14.891-14.891-36.979v-204.173q0-22.087 14.891-36.978 14.892-14.892 36.979-14.892t36.978 14.892q14.892 14.891 14.892 36.978v204.173q0 22.088-14.892 36.979-14.891 14.892-36.978 14.892Zm161.13 0q-21.522 0-36.696-15.174-15.174-15.175-15.174-36.697v-124.738q0-21.522 15.174-36.696t36.696-15.174q21.522 0 36.414 15.174 14.891 15.174 14.891 36.696v125.304q0 21.522-14.891 36.413-14.892 14.892-36.414 14.892Zm160.565 0q-21.521 0-36.696-15.174-15.174-15.175-15.174-36.697v-197.739q0-21.521 15.174-36.696 15.175-15.174 36.696-15.174 21.522 0 36.414 15.174 14.891 15.175 14.891 36.696v198.305q0 21.522-14.891 36.413-14.892 14.892-36.414 14.892Zm160.566 0q-21.522 0-36.696-15.174-15.174-15.175-15.174-36.697v-357.739q0-21.521 15.174-36.696 15.174-15.174 36.696-15.174t36.413 15.174q14.892 15.175 14.892 36.696v358.305q0 21.522-14.892 36.413-14.891 14.892-36.413 14.892ZM560-477.043q-20.522 0-39.827-7.979-19.304-7.978-35.261-22.935L400-592.869 197.609-390.478q-15.957 15.957-38.109 15.457t-37.544-16.457q-14.957-15.957-14.457-37.544.5-21.587 15.457-36.544l201.956-201.956q15.957-15.957 35.261-23.435 19.305-7.478 39.827-7.478t40.327 7.478q19.804 7.478 34.761 23.435L560-582.61l202.391-202.391q15.957-15.956 38.109-15.456t37.544 16.456q14.957 15.957 14.457 37.544-.5 21.587-15.457 36.544L635.088-507.957Q620.131-493 600.327-485.022q-19.805 7.979-40.327 7.979Z" />
+                    </svg>
+                    <p>Report</p>
+                </a>
+            </li>
+
+            <li><a role="button" data-widget="pushmenu" class="mobileFlink">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+                        <path
+                            d="M219.549-388Q181-388 154-414.778q-27-26.778-27-65.094Q127-519 154.134-545.5t65.238-26.5q38.928 0 66.278 26.728Q313-518.544 313-480.128 313-441 285.549-414.5q-27.452 26.5-66 26.5Zm260.579 0Q441-388 414.5-414.778T388-479.872Q388-519 414.778-545.5t65.094-26.5Q519-572 545.5-545.272t26.5 65.144Q572-441 545.272-414.5T480.128-388Zm260.783 0q-39.045 0-66.478-26.778Q647-441.556 647-479.872 647-519 674.659-545.5q27.66-26.5 66.5-26.5Q780-572 806.5-545.272q26.5 26.728 26.5 65.144Q833-441 806.272-414.5T740.911-388Z" />
+                    </svg>
+                    <p>More</p>
+                </a>
+            </li>
+        </ul>
+    </section>
+    <!-- mobile footer part end here  -->
+
+    
+
+    <footer class="main-footer text-center">
+        <strong>Copyright &copy; 2010 </strong>
+    </footer>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+<!--Jquery Cdn-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+    crossorigin="anonymous"></script> <!--Bootstrap-->
+<!-- AdminLTE App -->
+<script src="js/adminlte.js"></script>
+</body>
+
+</html>
