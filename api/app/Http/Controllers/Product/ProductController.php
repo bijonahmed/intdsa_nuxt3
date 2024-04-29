@@ -24,6 +24,7 @@ use App\Models\Withdraw;
 use Illuminate\Support\Str;
 use App\Rules\MatchOldPassword;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\JsonResponse;
 use Session;
 use DB;
 
@@ -38,6 +39,51 @@ class ProductController extends Controller
             $user = User::find($id->id);
             $this->userid = $user->id;
         }
+    }
+
+
+    public function categoryWiseProduct(Request $request)
+    {
+
+      
+        $user_id        = (int) $request->user_id;
+        $response       = app('App\Http\Controllers\Dropshipping\DropUserController')->getCurrentBalanceCheckAdminIndivUser($user_id);
+        $currentBalance = $response instanceof JsonResponse ? $response->getData(true)['currentbalance'] : 0;
+        
+        $categoryId     = (int) $request->categoryId;
+        $amount         = $currentBalance * 2;
+        $min_price      = 0;
+        $max_price      = $amount;
+        $pro_category = ProductCategory::where('category_id', $categoryId)->pluck('product_id')->toArray();
+        //Start Logic
+        if (!empty($pro_category)) {
+            $products_in_range = Product::whereIn('id', $pro_category)
+                ->whereBetween('selling_price', [$min_price, $max_price])
+                ->select('id', 'name', 'selling_price', 'thumnail_img', 'profit', 'buying_price')
+                ->get();
+            // Loop through the products and populate the array
+            foreach ($products_in_range as $pro_row) {
+                $productsArr[] = [
+                    'product_id'        => $pro_row->id,
+                    'product_name'      => $pro_row->name,
+                    'selling_price'     => $pro_row->selling_price,
+                    'order_date'        => date("Y-m-d"),
+                    'profit'            => $pro_row->profit,
+                    'user_id'           => $this->userid,
+                    'product_qty'       => 1,
+                    'buying_price'      => number_format($pro_row->buying_price,2),
+                    'user_balance'      => $currentBalance,
+                    'user_mul_balance'  => $amount,
+                    'order_status'      => 1, //To be paid.
+                    'thumnail_img'      => !empty($pro_row->thumnail_img) ? url($pro_row->thumnail_img) : "",
+                ];
+            }
+        }
+        //END Logic
+        $data['productsArr'] = $productsArr;
+        return response()->json($data);
+
+
     }
 
     public function dashboardCounting()

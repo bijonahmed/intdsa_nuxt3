@@ -31,6 +31,7 @@ use App\Rules\MatchOldPassword;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Carbon\Carbon;
+use App\Models\MystoreHistory;
 use Session;
 use DB;
 use Curl\Curl;
@@ -496,20 +497,42 @@ class DropUserController extends Controller
     public function getCurrentBalance()
     {
           // WORNING MESSAGES IF YOU CHANGE INSIDE METHOD PLEAE INSITANT CHANGE THIS METHOD: getCurrentBalanceCheckAdminIndivUser
+ 
+        $customTimeZone = 'Asia/Dhaka';
+        $currentTime = Carbon::now($customTimeZone);
+        // Add 8 hours to the current datetime
+        $currentTime->addHours(10);
+        // Format the datetime as needed
+        $current_date   = date("Y-m-d");
+        $activeStore    = MystoreHistory::where('end_date', '>=', $current_date)->where('user_id', $this->userid)->sum('service_price');
+     
+        $fastdownloadComission      = 0;
+        $seconddownloadComission    = 0;
+        $thirddownloadComission     = 0;
+        $fourthdownloadComission    = 0;
+        $fivedownloadComission      = 0;
+
         $user_id           = $this->userid;
         $manAdjstSum       = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',1)->sum('adjustment_amount');
         $manAdjstMinus     = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',2)->sum('adjustment_amount');
         $depositAmt        = Deposit::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
         $withdrawAmt       = Withdraw::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
         $expense_history   = ExpenseHistory::where('user_id', $user_id)->sum('operation_amount');
-        $chkPendingOrderStatus   = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->sum('buying_price');
-        // echo "deposit amount: $depositAmt ----- withdrawamt :$withdrawAmt: expense history: $expense_history";
-        //exit;
-        $result          = $depositAmt - $withdrawAmt - $expense_history + $manAdjstSum - $manAdjstMinus - $chkPendingOrderStatus;
+
+        $chkPendingOrder   = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->sum('buying_price');
+        $completeOrders    = Order::where('user_id',$this->userid)->whereIn('order_status',[6])->sum('selling_price');
+    
+
+        $allCredit         = $depositAmt + $manAdjstSum + $completeOrders + $fastdownloadComission + $seconddownloadComission + $thirddownloadComission +       
+                              $fourthdownloadComission + $fivedownloadComission;
+
+        $allDebit          = $activeStore  + $chkPendingOrder + $manAdjstMinus +  $withdrawAmt;
+        $result            = $allCredit - $allDebit;
+
+
         $data['current_balance'] = number_format($result, 2); // Formated Balance 
         $data['currentbalance']  = $result; //Without Format balance 
-        $data['chkPendingOrderStatus']=$chkPendingOrderStatus;
-        
+        $data['chkPendingOrderStatus']=$chkPendingOrder;
         //available_balance
         $udata['available_balance']=$data['current_balance'];
         User::where('id', $this->userid)->update($udata);
@@ -521,23 +544,47 @@ class DropUserController extends Controller
     public function getCurrentBalanceCheckAdminIndivUser($user_id)
     {
 
-        $manAdjstSum      = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',1)->sum('adjustment_amount');
-        $manAdjstMinus    = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',2)->sum('adjustment_amount');
-
-        $depositAmt       = Deposit::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
-        $withdrawAmt      = Withdraw::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
-        $expense_history  = ExpenseHistory::where('user_id', $user_id)->sum('operation_amount');
-        $chkPendingOrderStatus = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->sum('buying_price');
+        $customTimeZone = 'Asia/Dhaka';
+        $currentTime = Carbon::now($customTimeZone);
+        // Add 8 hours to the current datetime
+        $currentTime->addHours(10);
+        // Format the datetime as needed
+        $current_date   = date("Y-m-d");
+        $activeStore  = MystoreHistory::where('end_date', '>=', $current_date)->where('user_id', $user_id)->sum('service_price');
+        
+        
      
-        // echo "deposit amount: $depositAmt ----- withdrawamt :$withdrawAmt: expense history: $expense_history";
-        //exit;
-        $result          = $depositAmt - $withdrawAmt - $expense_history + $manAdjstSum - $manAdjstMinus  - $chkPendingOrderStatus;
+        $fastdownloadComission      = 0;
+        $seconddownloadComission    = 0;
+        $thirddownloadComission     = 0;
+        $fourthdownloadComission    = 0;
+        $fivedownloadComission      = 0;
+
+        //$user_id           = $this->userid;
+
+        $manAdjstSum       = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',1)->sum('adjustment_amount');
+        $manAdjstMinus     = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',2)->sum('adjustment_amount');
+        $depositAmt        = Deposit::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
+        $withdrawAmt       = Withdraw::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
+        $expense_history   = ExpenseHistory::where('user_id', $user_id)->sum('operation_amount');
+
+        $chkPendingOrder   = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->sum('buying_price');
+        $completeOrders    = Order::where('user_id',$this->userid)->whereIn('order_status',[6])->sum('selling_price');
+    
+
+        $allCredit         = $depositAmt + $manAdjstSum + $completeOrders + $fastdownloadComission + $seconddownloadComission + $thirddownloadComission +       
+                              $fourthdownloadComission + $fivedownloadComission;
+
+        $allDebit          = $activeStore  + $chkPendingOrder + $manAdjstMinus +  $withdrawAmt;
+        $result            = $allCredit - $allDebit;
+
         $data['current_balance'] = number_format($result, 2); // Formated Balance 
         $data['currentbalance']  = $result; //Without Format balance 
-        $data['chkPendingOrderStatus']=$chkPendingOrderStatus;
+        $data['chkPendingOrderStatus']=$chkPendingOrder;
+      
         //available_balance
         $udata['available_balance']=$data['current_balance'];
-        User::where('id', $user_id)->update($udata);
+        User::where('id', $this->userid)->update($udata);
       
         return response()->json($data, 200);
     }

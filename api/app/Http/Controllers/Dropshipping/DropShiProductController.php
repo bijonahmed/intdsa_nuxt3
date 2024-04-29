@@ -287,4 +287,36 @@ class DropShiProductController extends Controller
         }
         return response()->json("successfully delete product", 200);
     }
+
+    public function checkActiveStoreInfo(Request $request)
+    {
+
+        $user_id = $request->userid;
+
+        $customTimeZone = 'Asia/Dhaka';
+        $currentTime = Carbon::now($customTimeZone);
+        // Add 8 hours to the current datetime
+        $currentTime->addHours(10);
+        // Format the datetime as needed
+        $current_date   = date("Y-m-d");
+        $activeStore  = MystoreHistory::where('end_date', '>=', $current_date)->where('user_id', $user_id)->get();
+
+        if ($activeStore->isNotEmpty()) {
+
+            $categoryData  = [];
+            foreach ($activeStore as $store) {
+                $category_id   = $store->category_id; // Get the category ID from the store
+                $findCaterow   = Categorys::where('id', $category_id)->first(); // Find the category by ID
+                if ($findCaterow) { // If the category is found
+                    $categoryData[] = [
+                        'id'    => $findCaterow->id,
+                        'name'  => $findCaterow->name
+                    ];
+                }
+            }
+        }
+
+        $data['feachStoreNames']   = !empty($categoryData) ? $categoryData : "";
+        return response()->json($data, 200);
+    }
 }

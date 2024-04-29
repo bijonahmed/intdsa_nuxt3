@@ -34,7 +34,13 @@
                     <div class="container-fluid">
 
                         <div class="row">
+
+
+
                             <div class="col-md-12">
+                                <div class="alert-danger w-100" role="alert" style="width: 100%;">
+                                    {{ error }}
+                                </div>
                                 <!-- content part start here  -->
                                 <div class="s_content">
                                     <div class="dash_C mb-3">
@@ -75,7 +81,7 @@
                                         <div class="col-xl-4 mb-2">
                                             <form action="">
                                                 <div class="d-flex align-items-center justify-content-md-end">
-                                                   
+
                                                     <button type="button" class="btn mx-1 btn-success "
                                                         @click="orderList"><i
                                                             class="fa-solid fa-magnifying-glass me-2"></i>Search</button>
@@ -202,11 +208,11 @@ const pendingOrders = ref(0);
 
 const order_status = ref(1);
 const searchByOrderId = ref();
-
+const error = ref();
 const suc_mdal = (pro) => {
 
     console.log("records set: " + pro);
-    orderBatch.value = pro; 
+    orderBatch.value = pro;
     storeOrderId.value = pro.orderId;
     $(".confirm_mdal").fadeIn();
 
@@ -229,28 +235,37 @@ const orderrConfirm = async () => {
 
         currentBalance.value = res.data.currentBalance;
         pendingOrders.value = res.data.pendingOrders;
-        console.log("pendingOrders" + res.data.pendingOrders);
-        console.log("currentBalance" + res.data.currentBalance);
+
+        //console.log("pendingOrders" + res.data.pendingOrders);
+        //console.log("currentBalance" + res.data.currentBalance);
+        //console.log("error" + res.data.error);
+        if (res.data.error_status == 1) {
+            error.value = res.data.error;
+        } else {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 1000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+            Toast.fire({
+                icon: "success",
+                title: "Successfully order send."
+            });
+            error.value = res.data.error;
+        }
+
 
 
         cls_modal();
         orderList();
 
-        const Toast = Swal.mixin({
-            toast: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 1000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.onmouseenter = Swal.stopTimer;
-                toast.onmouseleave = Swal.resumeTimer;
-            }
-        });
-        Toast.fire({
-            icon: "success",
-            title: "Successfully order send."
-        });
+
         return false;
 
         //productArray.value = response.data.products;

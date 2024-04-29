@@ -43,28 +43,33 @@ class OrderController extends Controller
     {
 
         $orderId = $request->orderId;
-
-        $updateOrder['order_status'] = 2; //To be confirmed
-        Order::where('orderId', $orderId)->update($updateOrder);
-
-        $chkPendingOrderStatus = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->sum('buying_price');
-
-        $expData['user_id']             =  $this->userid;
-        $expData['operation_type']      =  "ConfirmOrder";
-        $expData['operation_amount']    =  $chkPendingOrderStatus;
-        $expData['charge_description']  =  "Confirm Order";
-        $expData['operation_date']      =  date("Y-m-d");
-        ExpenseHistory::insertGetId($expData);
-
         $response       = app('App\Http\Controllers\Dropshipping\DropUserController')->getCurrentBalance();
         $currentBalance = $response instanceof JsonResponse ? $response->getData(true)['current_balance'] : 0;
+        // Condition to check if current balance is zero or negative
+        if ($currentBalance <= 0) {
+            // If balance is zero or negative, return an error message or perform another action
+            $data['error'] = "Cannot deposit: Current balance is zero or negative";
+            $data['error_status'] = 1;
+            return response()->json($data);
+        } else {
+            $updateOrder['order_status'] = 2; //To be confirmed
+            Order::where('orderId', $orderId)->update($updateOrder);
+            $chkPendingOrderStatus = Order::where('user_id', $this->userid)->whereIn('order_status', [2, 3, 4, 5])->sum('buying_price');
 
-        $data['pendingOrders']  = number_format($chkPendingOrderStatus,2);
-        $data['currentBalance'] = $currentBalance;
+            $expData['user_id']             =  $this->userid;
+            $expData['operation_type']      =  "ConfirmOrder";
+            $expData['operation_amount']    =  $chkPendingOrderStatus;
+            $expData['charge_description']  =  "Confirm Order";
+            $expData['operation_date']      =  date("Y-m-d");
+            ExpenseHistory::insertGetId($expData);
 
-        return response()->json($data, 200);
- 
 
+            $data['pendingOrders']  = number_format($chkPendingOrderStatus, 2);
+            $data['currentBalance'] = $currentBalance;
+            $data['error'] = "";
+            $data['error_status'] = 0;
+            return response()->json($data, 200);
+        }
     }
 
     public function orderlist(Request $request)
@@ -159,7 +164,7 @@ class OrderController extends Controller
             // Instead of using raw SQL for hour comparison, use datetime comparisons
 
             //$query->where('order_inactive_time', '>=', $currentDateTime) // Orders inactive after now
-             //   ->where('order_inactive_time', '<=', $tenHoursAhead);  // Orders inactive within 10 hours
+            //   ->where('order_inactive_time', '<=', $tenHoursAhead);  // Orders inactive within 10 hours
 
             //dd($query);
 
@@ -171,19 +176,19 @@ class OrderController extends Controller
                 $query->where('orderId', $searchByOrderId);
             }
             if (!empty($order_status)) {
-                 $query->where('orders.order_status', $order_status);
+                $query->where('orders.order_status', $order_status);
             }
 
             $productsArr = $query->get();
 
             $orderStatus = OrderStatus::where('status', 1)->get();
-            $chkPendingOrder = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->sum('buying_price');
+            $chkPendingOrder = Order::where('user_id', $this->userid)->whereIn('order_status', [2, 3, 4, 5])->sum('buying_price');
             // dd($productsArr);
             $data['product_count']     = count($productsArr);
             $data['products']          = $productsArr;
-            $data['currentBalance']    = number_format($currentBalance,2);
+            $data['currentBalance']    = number_format($currentBalance, 2);
             $data['orderStatus']       = $orderStatus;
-            $data['chkPendingOrder']   = number_format($chkPendingOrder,2);
+            $data['chkPendingOrder']   = number_format($chkPendingOrder, 2);
             return response()->json($data, 200);
         } else {
             //echo "No active stores found.";

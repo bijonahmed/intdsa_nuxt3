@@ -179,6 +179,7 @@ Route::group([
     'middleware' => 'api',
     'prefix' => 'product'
 ], function () {
+    Route::get('categoryWiseProduct', [ProductController::class, 'categoryWiseProduct']);
     Route::post('save', [ProductController::class, 'save']);
     Route::get('dashboardCounting', [ProductController::class, 'dashboardCounting']);
     Route::post('product-update', [ProductController::class, 'productUpdate']);
@@ -200,6 +201,7 @@ Route::group([
     'prefix' => 'dropshippingpro'
 ], function () {
 
+    Route::get('checkActiveStoreInfo', [DropShiProductController::class, 'checkActiveStoreInfo']);
     Route::post('save', [DropShiProductController::class, 'save']);
     Route::post('product-update', [DropShiProductController::class, 'productUpdate']);
     Route::post('insertVarientGroup', [DropShiProductController::class, 'insertVarientGroup']);

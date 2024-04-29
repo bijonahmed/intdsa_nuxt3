@@ -21,6 +21,7 @@
             </section>
 
             <!-- Main content -->
+
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
@@ -104,7 +105,6 @@
                         </div>
                     </div>
 
-
                     <!-- table section start here  -->
                     <div class="card">
                         <!-- /.card-header -->
@@ -177,58 +177,52 @@
             <div class="modal-dialog modal-dialog-scrollable" role="document">
                 <div class="modal-content">
                     <div class="modal-header py-1">
-                        <h5 class="modal-title" id="detailsTitle">Create individual User</h5>
+                        <h5 class="modal-title" id="detailsTitle">Create Individual User</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
+                        <center>
+                            <h4 v-if="currentBalance">
+                                Current Balance : ${{ currentBalance }}
+                            </h4>
+                        </center>
                         <div class="col-md-12 m-auto">
                             <form action="">
                                 <div class="form-group">
                                     <label for="">Users</label>
-                                    <select class="selectpicker form-control" aria-label="Default select example"
-                                        data-live-search="true">
-                                        <option value="1">User 1</option>
-                                        <option value="2">User 2</option>
-                                        <option value="3">User 3</option>
-                                        <option value="4">User 4</option>
-                                    </select>
+                                    <input type="text" :value="query" @input="onInput"
+                                        placeholder="Search for users by email" class="form-control" />
+                                    <div v-if="users.length > 0" class="autocomplete-results">
+                                        <ul>
+                                            <li v-for="user in users" :key="user.id" @click="selectUser(user)">
+                                                {{ user.name }} [{{ user.email }}]
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
 
-                                </div>
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <h6>Balance: $23423.00</h6>
-                                    <ul style="list-style:  none; "
-                                        class="d-flex justify-content-between align-items-center">
-                                        <h6>Active: New agency store, Basic agency store, Mega agency store </h6>
-                                    </ul>
-                                </div>
                                 <div class="form-group mb-2">
-                                    <select name="" id="" class="form-control">
-                                        <option value="">New agency store</option>
-                                        <option value="">General Agency Store</option>
-                                        <option value="">Basic agency store</option>
-                                        <option value="">Super Agency Store</option>
-                                        <option value="">Mega agency store</option>
+                                    <select name="storeType" id="storeType" class="form-control"
+                                        v-model="selectedcategoryId" @change="showProducts">
+                                        <option value="">Select Stores</option>
+                                        <option v-for="store in feachStoreNames" :key="store.id" :value="store.id">
+                                            {{ store.name }}
+                                        </option>
                                     </select>
                                 </div>
                                 <h6>Sum of select product: <strong>$258.00</strong></h6>
                                 <div class="proListh">
                                     <table class="table">
-                                        <tr>
-                                            <td><input checked type="checkbox"></td>
-                                            <td>Product name ...</td>
-                                            <td><strong>$129.00</strong></td>
-                                        </tr>
-                                        <tr>
-                                            <td><input type="checkbox"></td>
-                                            <td>Product name ...</td>
-                                            <td><strong>$129.00</strong></td>
-                                        </tr>
-                                        <tr>
-                                            <td><input checked type="checkbox"></td>
-                                            <td>Product name ...</td>
-                                            <td><strong>$129.00</strong></td>
+                                        <tr v-for="product in prodcutsArray" :key="product.id">
+                                            <td>
+                                                <!-- Checkbox with binding to check if it's selected -->
+                                                <input type="checkbox" v-model="product.selected">
+                                            </td>
+                                            <td>{{ product.product_name }}</td> <!-- Product name -->
+                                            <td><strong>${{ product.buying_price }}</strong></td>
+                                            <!-- Product price -->
                                         </tr>
                                     </table>
                                 </div>
@@ -253,7 +247,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="col-md-12 m-auto">
-                           
+
                             <table class="table">
                                 <tr>
                                     <td class="text-left">Basic information</td>
@@ -299,16 +293,16 @@
 
                             </table>
 
-                            <form @submit.prevent="saveData()" id="formrest" class="form-group" enctype="multipart/form-data">
+                            <form @submit.prevent="saveData()" id="formrest" class="form-group"
+                                enctype="multipart/form-data">
                                 <div class="form-group">
                                     <label for="">Order Status</label>
                                     <select v-model="selectedStatus" class="form-control">
-                                                        <!-- Loop over allStatus to create options -->
-                                                        <option v-for="status in allStatus" :key="status.id"
-                                                            :value="status.id">
-                                                            {{ status.name }}
-                                                        </option>
-                                                    </select>
+                                        <!-- Loop over allStatus to create options -->
+                                        <option v-for="status in allStatus" :key="status.id" :value="status.id">
+                                            {{ status.name }}
+                                        </option>
+                                    </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="">Status</label>
@@ -341,7 +335,6 @@
             </div>
         </center>
 
-
     </div>
 </template>
 
@@ -355,6 +348,7 @@ const startDate = ref('');
 const endDate = ref('');
 const allStatus = ref([]);
 const status = ref('');
+const selectedcategoryId = ref('');
 const selectedStatus = ref(1);
 definePageMeta({
     middleware: 'is-logged-out',
@@ -366,12 +360,12 @@ const pageSize = 10;
 const totalRecords = ref(0);
 const totalPages = ref(0);
 const productdata = ref([]);
-
+const prodcutsArray = ref([]);
 const searchUserEmail = ref(""); // Add a ref for the search query
 const searchOrderId = ref(""); // Add a ref for the search query
 const selectedFilter = ref(1); // Add a ref for the search query
 
-
+// Utility function to format prices
 
 const orderrow = reactive({
     orderId: '',
@@ -387,53 +381,48 @@ const orderrow = reactive({
 
 });
 
-
 const saveData = () => {
-  const formData = new FormData();
+    const formData = new FormData();
+    formData.append('order_id', orderrow.orderId);
+    formData.append('selectedStatus', selectedStatus.value);
+    formData.append('status', status.value);
 
-  formData.append('order_id', orderrow.orderId);
-  formData.append('selectedStatus', selectedStatus.value);
-  formData.append('status', status.value);
+    axios.post('/order/updateOrder', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    }).then((res) => {
 
-  axios.post('/order/updateOrder', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  }).then((res) => {
-
-    $('#formrest')[0].reset();
-    success_noti();
-
-
-//details
-  }).catch(error => {
-    if (error.response && error.response.status === 422) {
-      errors.value = error.response.data.errors;
-    } else {
-      // Handle other types of errors here
-      console.error("An error occurred:", error);
-    }
-  });
+        $('#formrest')[0].reset();
+        success_noti();
+        //details
+    }).catch(error => {
+        if (error.response && error.response.status === 422) {
+            errors.value = error.response.data.errors;
+        } else {
+            // Handle other types of errors here
+            console.error("An error occurred:", error);
+        }
+    });
 };
 
-
 const success_noti = () => {
-  //alert("Your data has been successfully inserted.");
-  const Toast = Swal.mixin({
-    toast: true,
-    position: "top-end",
-    showConfirmButton: false,
-    timer: 1000,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.onmouseenter = Swal.stopTimer;
-      toast.onmouseleave = Swal.resumeTimer;
-    }
-  });
-  Toast.fire({
-    icon: "success",
-    title: "Successfully update."
-  });
+    //alert("Your data has been successfully inserted.");
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 1000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+    Toast.fire({
+        icon: "success",
+        title: "Successfully update."
+    });
 };
 
 const getDetails = (item) => {
@@ -456,7 +445,6 @@ const getDetails = (item) => {
         loading.value = false;
     }, 1000); // 3-second delay
 }
-
 
 //Pagniation with filter
 const fetchData = async (page) => {
@@ -506,7 +494,6 @@ watch(currentPage, (newPage) => {
     fetchData(newPage);
 });
 
-
 const orderProcess = async () => {
     try {
         loading.value = true;
@@ -518,15 +505,108 @@ const orderProcess = async () => {
         loading.value = false;
     }
 }
+
 const getOrderStatusList = () => {
     axios.get(`/order/getOrderStatus`).then(response => {
         allStatus.value = response.data;
     });
 };
 
+const showProducts = async () => {
+    console.log("Selected Category ID:", selectedcategoryId.value);
+    console.log("userId:", userId.value);
+
+    try {
+        loading.value = true;
+        // const response = await axios.get(`/product/categoryWiseProduct?categoryId=${selectedcategoryId.value}`);
+        const response = await axios.get('/product/categoryWiseProduct', {
+            params: {
+                categoryId: selectedcategoryId.value, // Pass the category ID
+                user_id: userId.value,                // Pass the user ID
+            },
+        });
+        prodcutsArray.value = response.data.productsArr; // Update users with the result
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        users.value = []; // Clear users on error
+    } finally {
+        loading.value = false;
+    }
+
+};
 
 const filterData = () => {
     fetchData(1); // Reset to first page when search query changes
+};
+
+//Autocomlete
+// Reactive state variables
+const query = ref('');
+const users = ref([]);
+const feachStoreNames = ref([]);
+const userId = ref('');
+const storeName = ref('');
+const currentBalance = ref(0);
+
+// Function to fetch users from the API
+const fetchUsers = async (searchQuery) => {
+    if (searchQuery.length < 1) {
+        users.value = []; // Clear users if the query is less than 3 characters
+        return;
+    }
+
+    try {
+        const response = await axios.get(`/user/autocompleteUser?query=${searchQuery}`);
+        users.value = response.data; // Update users with the result
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        users.value = []; // Clear users on error
+    }
+};
+
+// Event handler for input changes
+const onInput = (event) => {
+    query.value = event.target.value; // Update query value
+};
+
+// Watch the query for changes and fetch users
+watch(query, (newQuery) => {
+    fetchUsers(newQuery);
+});
+const getSelectedUsersInfo = async (userid) => {
+    try {
+        const response = await axios.get(`/user/getUserWiseCurrentBalance?userid=${userid}`);
+        // console.log("response:" + response.data);
+        currentBalance.value = response.data; // Update users with the result
+
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        users.value = []; // Clear users on error
+    }
+}
+
+const checkActiveStore = async (userid) => {
+    try {
+        const response = await axios.get(`/dropshippingpro/checkActiveStoreInfo?userid=${userid}`);
+        // console.log("response:" + response.data);
+        storeName.value = response.data.storeName;
+        feachStoreNames.value = response.data.feachStoreNames;
+
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        users.value = []; // Clear users on error
+    }
+}
+
+// Function to handle user selection
+const selectUser = (user) => {
+    query.value = user.name; // Replace input with selected user
+    userId.value = user.id
+    getSelectedUsersInfo(user.id);
+    checkActiveStore(user.id);
+    // console.log("-------" + user.id);
+    users.value = []; // Clear suggestions
+    // Perform additional actions like setting user ID
 };
 
 onMounted(() => {
@@ -538,7 +618,6 @@ onMounted(() => {
 });
 //orderProcess
 </script>
-
 
 <style>
 .pagination {
@@ -615,5 +694,29 @@ tr:hover {
 .custompadd {
     padding-right: 5px !important;
 
+}
+
+/* Autocomplete */
+.autocomplete-results {
+    border: 1px solid #ddd;
+    background-color: #fff;
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+}
+
+.autocomplete-results ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.autocomplete-results li {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.autocomplete-results li:hover {
+    background-color: #f0f0f0;
 }
 </style>
