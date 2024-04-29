@@ -114,7 +114,7 @@ class DropUserController extends Controller
                 'user_id'        => $this->userid
             );
             $insert_id = Deposit::insertGetId($data);
-
+            
 
             $merchant_no     = "3090032";
             $merchant_key     = "f82b830d09bc92f726b71066be300c50";

@@ -51,7 +51,7 @@ class OrderController extends Controller
         // Format the datetime as needed
         $currentTimeFormatted = $currentTime->format('Y-m-d H:i:s');
 
-       // echo "Current Time in $customTimeZone after adding 3 hours: $currentTimeFormatted";
+        // echo "Current Time in $customTimeZone after adding 3 hours: $currentTimeFormatted";
         $response       = app('App\Http\Controllers\Dropshipping\DropUserController')->getCurrentBalance();
         $currentBalance = $response instanceof JsonResponse ? $response->getData(true)['currentbalance'] : 0;
         // Define the current date
@@ -86,7 +86,7 @@ class OrderController extends Controller
                             'selling_price'     => $pro_row->selling_price,
                             'order_date'        => date("Y-m-d"),
                             'created_at'        =>  $startTime,
-                            'order_inactive_time'=>  $currentTimeFormatted,
+                            'order_inactive_time' =>  $currentTimeFormatted,
                             'profit'            => $pro_row->profit,
                             'user_id'           => $this->userid,
                             'orderId'           => $this->generateUniqueRandomNumber(),
@@ -104,6 +104,7 @@ class OrderController extends Controller
 
             //dd($productsArr);
             // Insert multiple records into the database
+            /*
             if (!empty($productsArr)) {
                 $existingOrder = Order::where('user_id', $this->userid)
                     ->whereDate('order_date', $current_date)
@@ -113,10 +114,11 @@ class OrderController extends Controller
                     Order::insert($productsArr);
                 }
             }
+            */
             $productsArr = Order::where('user_id', $this->userid)
-                        ->where('order_date', $current_date)
-                        ->where('status', 1)
-                        ->whereRaw("HOUR(order_inactive_time) > ?", [$currentHour])->get();
+                ->where('order_date', $current_date)
+                ->where('status', 1)
+                ->whereRaw("HOUR(order_inactive_time) > ?", [$currentHour])->get();
             // dd($productsArr);
             $data['product_count'] = count($productsArr);
             $data['products']      = $productsArr;
@@ -127,32 +129,97 @@ class OrderController extends Controller
         }
     }
 
-    public function save_order(Request $request)
+    public function assignOrder(Request $request)
     {
-        //dd($request->all());
-        $validator = Validator::make($request->all(), [
-            'name'           => 'required',
-        ]);
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-        $data = array(
-            'name'        => $request->name,
-            'description' => $request->description,
-        );
-        if (empty($request->id)) {
-            OrderStatus::insertGetId($data);
+
+        $customTimeZone = 'Asia/Dhaka';
+        $startTime = Carbon::now($customTimeZone);
+        $currentHour = $startTime->hour;
+        //echo $currentHour;exit; 
+        // Get the current datetime in the custom time zone
+        $currentTime = Carbon::now($customTimeZone);
+        // Add 8 hours to the current datetime
+        $currentTime->addHours(10);
+        // Format the datetime as needed
+        $currentTimeFormatted = $currentTime->format('Y-m-d H:i:s');
+
+        // echo "Current Time in $customTimeZone after adding 3 hours: $currentTimeFormatted";
+
+        // Define the current date
+        $current_date   = date("Y-m-d");
+
+        // Query Mystore to find stores where the end_date is on or after the current date
+        $active_stores  = MystoreHistory::where('end_date', '>=', $current_date)->get();
+
+        $min_price      = 0;
+        // Output the results
+        if ($active_stores->isNotEmpty()) {
+            $productsArr = [];
+            foreach ($active_stores as $store) {
+
+                $response       = app('App\Http\Controllers\Dropshipping\DropUserController')->getCurrentBalanceCheckAdminIndivUser($store->user_id);
+                $currentBalance = $response instanceof JsonResponse ? $response->getData(true)['currentbalance'] : 0;
+                $amount         = $currentBalance * 2;
+                $max_price      = $amount;
+
+                //echo "My Store ID: " . $store->mystore_id . ": CategoryID:". $store->category_id. " - End Date: " . $store->end_date . "\n";
+                $category_id = $store->category_id;
+                $user_id = $store->user_id;
+                $pro_category = ProductCategory::where('category_id', $category_id)->pluck('product_id')->toArray();
+                //Start Logic
+                if (!empty($pro_category)) {
+                    $products_in_range = Product::whereIn('id', $pro_category)
+                        ->whereBetween('selling_price', [$min_price, $max_price])
+                        ->select('id', 'name', 'selling_price', 'thumnail_img', 'profit', 'buying_price')
+                        ->get();
+                    // Loop through the products and populate the array
+                    foreach ($products_in_range as $pro_row) {
+
+                        //$startTime      = date('Y-m-d H:i:s');
+                        //       $order_end_time = date('Y-m-d H:i:s',strtotime('+10 hour',strtotime($startTime)));
+                        $productsArr[] = [
+                            'product_id'        => $pro_row->id,
+                            'product_name'      => $pro_row->name,
+                            'selling_price'     => $pro_row->selling_price,
+                            'order_date'        => date("Y-m-d"),
+                            'created_at'        =>  $startTime,
+                            'order_inactive_time' =>  $currentTimeFormatted,
+                            'profit'            => $pro_row->profit,
+                            'user_id'           => $user_id,
+                            'orderId'           => $this->generateUniqueRandomNumber(),
+                            'product_qty'       => 1,
+                            'buying_price'      => $pro_row->buying_price,
+                            'user_balance'      => $currentBalance,
+                            'user_mul_balance'  => $amount,
+                            'order_status'      => 1, //To be paid.
+                            'thumnail_img'      => !empty($pro_row->thumnail_img) ? url($pro_row->thumnail_img) : "",
+                        ];
+                    }
+                }
+                //END Logic
+            }
+
+            //  dd($productsArr);
+            // Insert multiple records into the database
+            if (!empty($productsArr)) {
+                $existingOrder = Order::whereDate('order_date', $current_date)->first();
+                if (!$existingOrder) {
+                    // If no existing order found, proceed with the insertion
+                    Order::insert($productsArr);
+                }
+            }
+            $productsArr = Order::where('user_id', $this->userid)
+                ->where('order_date', $current_date)
+                ->where('status', 1)->get();
+            // dd($productsArr);
+            $data['product_count'] = count($productsArr);
+            $data['products']      = $productsArr;
+            return response()->json($data, 200);
         } else {
-            OrderStatus::where('id', $request->id)->update($data);
+            //echo "No active stores found.";
+            return response()->json("No active stores found", 200);
         }
-
-        $response = [
-            'data' => $data,
-            'message' => 'success'
-        ];
-        return response()->json($response, 200);
     }
-
 
     function generateUniqueRandomNumber($length = 5)
     {
@@ -162,7 +229,6 @@ class OrderController extends Controller
 
         return $randomNumber;
     }
-
 
     public function orderDetails($order_id)
     {
@@ -215,5 +281,97 @@ class OrderController extends Controller
         $order['orderdata']      = $orders;
 
         return response()->json($order, 200);
+    }
+
+    public function filterOrderList(Request $request)
+    {
+
+        // Get search query from the request
+        $page = $request->input('page', 1);
+        $pageSize = $request->input('pageSize', 10);
+
+        $searchUserEmail    = $request->searchUserEmail;
+        $searchOrderId      = $request->searchOrderId;
+        $startDate          = $request->startDate;
+        $endDate            = $request->endDate;
+        $selectedStatus     = $request->selectedStatus;
+
+        // dd($selectedFilter);
+        $query = Order::orderBy('orders.id', 'desc')
+            ->join('users', 'orders.user_id', '=', 'users.id')
+            ->select('orders.order_date', 'orders.order_status', 'orders.id', 'orders.orderId', 'orders.product_name', 'orders.buying_price as costing_price', 'orders.profit', 'users.name as username', 'users.telegram', 'users.phone_number', 'users.whtsapp', 'users.email', 'orders.selling_price');
+
+        if ($searchUserEmail !== null) {
+            $query->where('users.email', 'like', '%' . $searchUserEmail . '%');
+            //$query->where('users.email', $searchUserEmail);
+        }
+
+        if ($searchOrderId !== null) {
+            $query->where('orders.orderId', 'like', '%' . $searchOrderId . '%');
+            //$query->where('users.email', $searchOrderId);
+        }
+
+        if ($selectedStatus !== null) {
+            $query->where('orders.order_status', $selectedStatus);
+        }
+
+        // Apply date range filtering if start and end dates are provided
+        if ($startDate !== null && $endDate !== null) {
+            $query->whereBetween('orders.order_date', [$startDate, $endDate]);
+        }
+
+        // $query->where('users.role_id', 2);
+        $paginator = $query->paginate($pageSize, ['*'], 'page', $page);
+
+        $modifiedCollection = $paginator->getCollection()->map(function ($item) {
+
+            $checkOrStatus  = OrderStatus::where('id', $item->order_status)->first();
+            $telegram       = !empty($item->telegram) ? $item->telegram : "None";
+            $phone          = !empty($item->phone_number) ? $item->phone_number : "";
+            $whtsapp        = !empty($item->whtsapp) ? $item->whtsapp : "None";
+
+            return [
+                'id'            => $item->id,
+                'orderId'       => $item->orderId,
+                'product_name'  => $item->product_name,
+                'userInfo_1'    => $item->username,
+                'userInfo_2'    => $phone,
+                'userInfo_3'    => $item->email,
+                'userInfo_4'    => $telegram,
+                'userInfo_5'    => $whtsapp,
+                'order_date'    => date("Y-M-d", strtotime($item->order_date)),
+                'selling_price' => $item->selling_price,
+                'costing_price' => $item->costing_price,
+                'profit'        => number_format($item->profit, 2),
+                'status'        => !empty($checkOrStatus) ? $checkOrStatus->name : "",
+            ];
+        });
+
+        // Return the modified collection along with pagination metadata
+        return response()->json([
+            'data' => $modifiedCollection,
+            'current_page' => $paginator->currentPage(),
+            'total_pages' => $paginator->lastPage(),
+            'total_records' => $paginator->total(),
+        ], 200);
+    }
+
+
+    public function updateOrder(Request $request){
+
+
+        $order_id               = $request->order_id; 
+        $data['order_status']   = (int)$request->selectedStatus;
+        $data['status']         = (int)$request->status;
+        Order::where('orderId', $order_id)->update($data);
+
+        return response()->json("Update successfully", 200);
+
+    }
+
+    public function getOrderStatus()
+    {
+        $status  = OrderStatus::where('status', 1)->get();
+        return response()->json($status, 200);
     }
 }

@@ -24,6 +24,7 @@ use Illuminate\Support\Str;
 use App\Rules\MatchOldPassword;
 use Illuminate\Support\Facades\Hash;
 use Session;
+use Carbon\Carbon;
 use DB;
 use PhpParser\Node\Stmt\TryCatch;
 
@@ -34,14 +35,89 @@ class DepositController extends Controller
     {
         $this->middleware('auth:api');
         $id = auth('api')->user();
-        if(!empty($id)){
+        if (!empty($id)) {
             $user = User::find($id->id);
             $this->userid = $user->id;
         }
-       
     }
 
- public function updateWithDrawRequest(Request $request)
+    public function filterRechargeList(Request $request)
+    {
+
+        // Get search query from the request
+        $page = $request->input('page', 1);
+        $pageSize = $request->input('pageSize', 10);
+
+        $searchUserEmail    = $request->searchUserEmail;
+        $searchTranId       = $request->searchOrderId;
+        $sDate              = $request->startDate;
+        $eDate              = $request->endDate;
+        $selectedStatus     = $request->selectedStatus;
+        $startDate = Carbon::parse($sDate)->startOfDay();
+        $endDate = Carbon::parse($eDate)->endOfDay();
+
+        // dd($selectedFilter);
+        $query = Deposit::orderBy('deposit.id', 'desc')
+            ->join('users', 'deposit.user_id', '=', 'users.id')
+            ->select('deposit.*','users.name as username', 'users.telegram', 'users.phone_number', 'users.whtsapp', 'users.email');
+
+        if ($searchUserEmail !== null) {
+            $query->where('users.email', 'like', '%' . $searchUserEmail . '%');
+            //$query->where('users.email', $searchUserEmail);
+        }
+
+        if ($searchTranId !== null) {
+            $query->where('deposit.depositID', 'like', '%' . $searchTranId . '%');
+            //$query->where('users.email', $searchOrderId);
+        }
+
+        if ($selectedStatus !== null) {
+            $query->where('deposit.status', $selectedStatus);
+        }
+
+        // Apply date range filtering if start and end dates are provided
+        if ($startDate !== null && $endDate !== null) {
+            $query->whereBetween('deposit.created_at', [$startDate, $endDate]);
+        }
+
+        // $query->where('users.role_id', 2);
+        $paginator = $query->paginate($pageSize, ['*'], 'page', $page);
+        $modifiedCollection = $paginator->getCollection()->map(function ($item) {
+
+            $checkStatus    = $item->status == 1 ? 'SUCCESS' : 'UNPAID';
+            $telegram       = !empty($item->telegram) ? $item->telegram : "None";
+            $phone          = !empty($item->phone_number) ? $item->phone_number : "";
+            $whtsapp        = !empty($item->whtsapp) ? $item->whtsapp : "None";
+
+            return [
+                'id'            => $item->id,
+                'depositID'     => $item->depositID,
+                'userInfo_1'    => $item->username,
+                'userInfo_2'    => $phone,
+                'userInfo_3'    => $item->email,
+                'userInfo_4'    => $telegram,
+                'deposit_date'  => date("Y-M-d", strtotime($item->created_at)),
+                'deposit_amount'=> $item->deposit_amount,
+                'wallet_address'=> $item->wallet_address,
+                'receivable_amount' => $item->receivable_amount,
+                'depscription'  => $item->depscription,
+                'status'        => $checkStatus,
+            ];
+        });
+
+        // Return the modified collection along with pagination metadata
+        return response()->json([
+            'data' => $modifiedCollection,
+            'current_page' => $paginator->currentPage(),
+            'total_pages' => $paginator->lastPage(),
+            'total_records' => $paginator->total(),
+        ], 200);
+    }
+
+
+
+
+    public function updateWithDrawRequest(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -109,7 +185,7 @@ class DepositController extends Controller
                 return response()->json(['errors' => $validator->errors()], 422);
             }
             $data = array(
-                'depositID'      => 'D.'.$this->generateUnique4DigitNumber(),
+                'depositID'      => 'D.' . $this->generateUnique4DigitNumber(),
                 'depscription'   => 'Deposit created. Your ID: ' . $this->generateUnique4DigitNumber(),
                 'deposit_amount' => $request->depsoitAmount,
                 'payment_method' => $request->payment_method,
@@ -181,7 +257,7 @@ class DepositController extends Controller
                 'withdraw_amount'   => $item->withdraw_amount,
                 'payable_amount'    => $item->payable_amount,
                 'transection_fee'   => $item->transection_fee,
-                'withdrawal_method_id'=> $item->withdrawal_method_id,
+                'withdrawal_method_id' => $item->withdrawal_method_id,
                 'status'            => $status,
             ];
         });
@@ -272,7 +348,7 @@ class DepositController extends Controller
     {
         try {
             $user = Withdraw::where('withdraw.id', $id)
-                ->select('users.name', 'withdraw.*','currency_type.name as currency_type_name')
+                ->select('users.name', 'withdraw.*', 'currency_type.name as currency_type_name')
                 ->join('withdrawal_method', 'withdraw.withdrawal_method_id', '=', 'withdrawal_method.id')
                 ->join('currency_type', 'withdrawal_method.currency_type_id', '=', 'currency_type.id')
                 ->leftJoin('users', 'withdraw.user_id', '=', 'users.id')
@@ -284,5 +360,4 @@ class DepositController extends Controller
             return response()->json($error);
         }
     }
-
 }

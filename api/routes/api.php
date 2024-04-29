@@ -55,8 +55,11 @@ Route::group([
 Route::group([
     'prefix' => 'order'
 ], function () {
-    //Add to cart 
+    Route::post('updateOrder', [OrderController::class, 'updateOrder']);
+    Route::get('getOrderStatus', [OrderController::class, 'getOrderStatus']);
+    Route::get('filterOrderList', [OrderController::class, 'filterOrderList']);
     Route::get('orderlist', [OrderController::class, 'orderlist']);
+    Route::post('assignOrder', [OrderController::class, 'assignOrder']);
     
 });
 Route::group([
@@ -74,6 +77,7 @@ Route::group([
     'middleware' => 'api',
     'prefix' => 'user'
 ], function () {
+    Route::get('inactiveUser', [UserController::class, 'inactiveUser']);
     Route::get('getInviteCode', [UserController::class, 'getInviteCode']);
     Route::get('autocompleteUser', [UserController::class, 'autocompleteUser']);
     Route::get('allUsers', [UserController::class, 'AllUsersList']);
@@ -214,6 +218,7 @@ Route::group([
     'middleware' => 'api',
     'prefix' => 'deposit'
 ], function () {
+    Route::get('filterRechargeList', [DepositController::class, 'filterRechargeList']);
     Route::get('depositrow/{id}', [DepositController::class, 'depositrow']);
     Route::get('withdrawrow/{id}', [DepositController::class, 'withdrawrow']);
     Route::get('deposit-list', [DepositController::class, 'getDepositList']);

@@ -1,7 +1,7 @@
 <template>
     <title>Report</title>
     <div>
-            <MobileHeader/>
+        <MobileHeader />
         <div class="wrapper">
             <!-- Navbar -->
             <PartnerNavbarLayout />
@@ -32,7 +32,11 @@
                 <!-- Main content -->
                 <section class="content">
                     <div class="container-fluid">
-
+                        <center>
+                                        <div class="loading-indicator" v-if="loading" style="text-align: center;">
+                                            <Loader />
+                                        </div>
+                                    </center>
                         <div class="row">
                             <div class="col-md-12">
                                 <!-- content part start here  -->
@@ -53,7 +57,7 @@
                                             <i class="fa-solid fa-wallet"></i>
                                             <div class="dash_C">
                                                 <h3>Available balance</h3>
-                                                <h1>$0</h1>
+                                                <h1>${{ current_balance }}</h1>
                                                 <span>In transection: $00.00</span>
                                                 <span>Number of conplaints: 00</span>
                                             </div>
@@ -93,13 +97,81 @@
         <MobileFooter />
     </div>
 </template>
-<script>
-import { defineComponent } from '@vue/composition-api'
-import MobileHeader from '~/components/MobileHeader.vue';
 
-export default defineComponent({
-    setup() {
-
-    },
+<script setup>
+const router = useRouter()
+import axios from "axios";
+import Swal from 'sweetalert2'
+definePageMeta({
+    middleware: 'is-logged-out',
 })
+const loading = ref(false);
+const current_balance = ref('');
+
+//Payment getway
+ 
+
+const getCurrentBalance = async () => {
+    try {
+        loading.value = true; 
+        let response;
+        response = await axios.get("/dropUser/getCurrentBalance");
+        current_balance.value = response.data.current_balance;
+    } catch (error) {
+        console.error("Error fetching deposit list:", error);
+    } finally{
+        loading.value = false; 
+    }
+
+};
+
+/*
+const depositList = async () => {
+    const depositId = searchDOrderId.value;
+    // console.log("=======" + depositId);
+    //return false; 
+    try {
+        loading.value = true; // Set loading to true before making the request
+        let response;
+        if (depositId) {
+            response = await axios.get(`/dropUser/depositRequestList?orderId=${depositId}`);
+        } else {
+            response = await axios.get("/dropUser/depositRequestList");
+        }
+
+        depositArr.value = response.data.data;
+    } catch (error) {
+        console.error("Error fetching deposit list:", error);
+    } finally {
+        loading.value = false; // Set loading to false after the request completes (whether success or failure)
+    }
+};
+
+
+const withdrawalList = async () => {
+    try {
+        loading.value = true; // Set loading to true before making the request
+
+        let response;
+        if (searchWOrderId.value) {
+            response = await axios.get(`/dropUser/withDrawalRequestList?orderId=${searchWOrderId.value}`);
+        } else {
+            response = await axios.get("/dropUser/withDrawalRequestList");
+        }
+        withdrawArr.value = response.data.data;
+        console.log('sdfssdfsd' + response.data.data);
+    } catch (error) {
+        console.error("Error fetching withdrawal list:", error);
+    } finally {
+        loading.value = false; // Set loading to false after the request completes (whether success or failure)
+    }
+};
+
+*/
+
+onMounted(() => {
+    getCurrentBalance();
+
+});
+
 </script>

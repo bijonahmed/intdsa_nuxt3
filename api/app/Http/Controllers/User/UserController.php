@@ -256,8 +256,6 @@ class UserController extends Controller
         ], 200);
     }
 
-
-
     public function getUserWiseCurrentBalance(Request $request)
     {
         $userid = $request->userid;
@@ -480,6 +478,17 @@ class UserController extends Controller
 
     }
 
+
+    public function inactiveUser(Request $request){
+            
+      $userId = $request->user_id;
+      $data['status'] = 0;
+      User::where('id', $userId)->update($data);
+      return response()->json("Update successfully"); 
+
+
+    }
+
     public function AllUsersList(Request $request)
     {
 
@@ -511,7 +520,7 @@ class UserController extends Controller
             $telegram       = !empty($item->telegram) ? $item->telegram : "None";
             $phone          = !empty($item->phone_number) ? $item->phone_number : "";
             $whtsapp        = !empty($item->whtsapp) ? $item->whtsapp : "None";
-            $status         = $item->status == 1  ? 'Active' : "None";
+            $status         = $item->status == 1  ? 'Active' : "Inactive";
             $ref_id         = !empty($item->ref_id) ? $item->ref_id : ""; //$item->ref_id == 1  ? 'Active' : "None";
             $chkInviteUser  = User::where('id', $ref_id)->select('name', 'phone_number', 'email')->first();
             $registerIP     = $item->register_ip;
@@ -836,9 +845,6 @@ class UserController extends Controller
         ];
         return response()->json($response);
     }
-
-
-
 
     public function sendUserManualAdjst(Request $request)
     {

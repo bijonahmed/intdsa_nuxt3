@@ -33,7 +33,7 @@
                                             <tr>
                                                 <th class="border-0  p-0 " style="padding-right: 5px !important;">
                                                     <input type="text" class="form-control" v-model="searchQuery"
-                                                        placeholder="Search by name ">
+                                                        placeholder="Search by email ">
                                                 </th>
                                                 <th class="border-0 p-0 me-1" style="padding-right: 5px !important;">
                                                     <select name="" id="" class="form-control" v-model="selectedFilter"
@@ -91,14 +91,12 @@
                                     <tr>
                                         <th><input type="checkbox" id="checkAll"></th>
                                         <th>User ID</th>
-                                        <th>user type</th>
-                                        <th>User Info</th>
+                                        <th class="text-start">User Info</th>
                                         <th>Status</th>
-                                        <th>Invite users</th>
-                                        <th>Register/Login IP</th>
-                                        <th>Register/login IP country</th>
-                                        <th>Registration time </th>
-                                        <th>Update time </th>
+                                        <th class="text-start">Invite users</th>
+                                        <th>Register IP</th>
+                                        <th>login IP </th>
+                                        <th>Reg/Update time </th>
                                         <th>Action</th>
                                     </tr>
 
@@ -109,31 +107,30 @@
                                             <input type="checkbox" class="checkBox">
                                         </td>
                                         <td>{{ item.id }}</td>
-                                        <td><small>{{ item.rulename }}</small></td>
                                         <td class="text-left">
                                             <small>{{ item.userInfo_1 }}</small><br />
                                             <small>{{ item.userInfo_2 }}</small><br />
                                             <small>{{ item.userInfo_3 }}</small><br />
-                                            <small>{{ item.userInfo_4 }}</small><br />
-                                            <small>{{ item.userInfo_5 }}</small><br />
 
                                         </td>
-                                        <td><small>Active</small></td>
+                                        <td><small>{{ item.status }}</small></td>
                                         <td class="text-left">
                                             <small>{{ item.invite_user_1 }}</small><br />
                                             <small>{{ item.invite_user_2 }}</small><br />
                                             <small>{{ item.invite_user_3 }}</small><br />
                                         </td>
                                         <td>
-                                            <p>Registration: {{ item.register_ip }}</p>
-                                            <p>Login: {{ item.lastlogin_ip }}</p>
+                                            <p>{{ item.register_ip }}</p>
+                                            <p>{{ item.register_country }}</p>
                                         </td>
                                         <td>
-                                            <p>Registration: {{ item.register_country }}</p>
-                                            <p>Login: {{ item.lastlogin_country }}</p>
+                                            <p>{{ item.lastlogin_ip }}</p>
+                                            <p>{{ item.lastlogin_country }}</p>
                                         </td>
-                                        <td><small>{{ item.created_at }}</small></td>
-                                        <td><small>{{ item.updated_at }}</small></td>
+                                        <td>
+                                            <p>R: {{ item.created_at }}</p>
+                                            <p>U: {{ item.updated_at }}</p>
+                                        </td>
                                         <td>
                                             <div class="">
                                                 <button class="btn w-100 d-block btn-default btn-sm btn-flat"
@@ -439,7 +436,7 @@
                 </div>
             </div>
         </div>
-        <!-- team show modal  -->
+        <!-- delete modal  -->
         <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
             aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
@@ -452,7 +449,7 @@
                     </div>
                     <div class="d-flex align-items-center p-1">
                         <button type="button" class="btn btn-default btn-flat w-50" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-danger btn-flat w-50">Confirm</button>
+                        <button type="button" class="btn btn-danger btn-flat w-50" @click="confirmDelete(deleteuserId)">Confirm</button>
                     </div>
                 </div>
             </div>
@@ -480,6 +477,7 @@ const totalPages = ref(0);
 const productdata = ref([]);
 const searchQuery = ref(""); // Add a ref for the search query
 const selectedFilter = ref(1); // Add a ref for the search query
+const deleteuserId = ref(); // Add a ref for the search query
 // UserDetails Information 
 const u_details_user_id = ref("");
 const u_details_name = ref("");
@@ -627,11 +625,29 @@ const changePass = (id) => {
     console.log('Change Password id:', id);
 };
 
+
+const confirmDelete = (deleteuserId) =>{
+
+    const userid = deleteuserId;
+    axios.get(`/user/inactiveUser`, {
+      params: {
+          user_id: userid
+      }
+  }).then(response => {
+    fetchData(1); // Reset to first page when search query changes
+
+  }).catch(error => {
+      console.error('Error removing image:', error);
+  });
+
+
+}
 // Define a method to handle deleting
 const deleteItem = (id) => {
-    alert(id);
-    // Your logic for deleting goes here
-    console.log('Deleting item with id:', id);
+  deleteuserId.value = id;
+
+ 
+
 };
 
 // Define a method to handle previewing

@@ -116,13 +116,9 @@
                                                 <table class="table ac_details">
                                                     <thead>
                                                         <tr>
-                                                            <th>Business Type </th>
                                                             <th>Operation Type</th>
-                                                            <th>Amount Type</th>
                                                             <th>Operation Amount</th>
-                                                            <!-- <th>Original Amount</th> -->
-                                                            <!-- <th>Latest Amount</th> -->
-                                                            <th>Charge description</th>
+                                                            <th>Description</th>
                                                             <th>Operation time</th>
                                                             <!-- <th>More</th> -->
                                                         </tr>
@@ -130,11 +126,7 @@
                                                     <!-- {{ acc_data }} -->
                                                     <tbody>
                                                         <tr v-for="(item, index) in acc_data" :key="index">
-                                                            <td>{{ item.business_type }}</td>
-                                                            <td :class="{ 'text-danger': item.operation_type }">{{
-                                                                item.operation_type ?
-                                                                    'Reduce' : 'Not Reduced' }}</td>
-                                                            <td>{{ item.amount_type }}</td>
+                                                            <td>{{ item.operation_type }}</td>
                                                             <td class="text-danger d-sm-justify-content-between">
                                                                 <span class="mb_show">Operation Amount:</span>
                                                                 <span>{{ item.operation_amount }}</span>

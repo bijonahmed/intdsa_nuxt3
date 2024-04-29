@@ -330,8 +330,6 @@ const updateChangePassword = () => {
 
 
 const updateChangeWithPassword = () => {
-
-  
     const formData = new FormData();
     formData.append('id', insertdata.id);
     formData.append('password', changeWithPass.password);

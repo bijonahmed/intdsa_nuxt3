@@ -27,7 +27,7 @@
 
                     <div class="page_top  my-2">
                         <div class="row justify-content-between align-items-center my-2">
-                            <div class="row">
+                            <div class="row d-none">
                                 <div class="col-md-12">
                                     <div class="basic_data_container">
                                         <div class="data_box">
@@ -38,7 +38,7 @@
                                             <h6>Total balance: 987234239847897</h6>
                                         </div>
                                         <div class="data_box">
-                                            <h6>To be paid order qty: 435345</h6>
+                                            <h6>To be paid order qty: =={{ totalRecords }}</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -48,57 +48,50 @@
                                     <table class="table mb-0">
                                         <thead>
                                             <tr>
-                                                <th class="border-0  p-0 " style="padding-right: 5px !important;">
-                                                    <input type="text" class="form-control"
-                                                        placeholder="Search by user ">
+                                                <th class="border-0  p-0 custompadd">
+                                                    <input type="text" class="form-control" placeholder="Search Email"
+                                                        v-model="searchUserEmail">
                                                 </th>
-                                                <th class="border-0  p-0 " style="padding-right: 5px !important;">
-                                                    <input type="text" class="form-control"
-                                                        placeholder="Search by order id">
+                                                <th class="border-0  p-0 custompadd">
+                                                    <input type="text" class="form-control" placeholder="Search OrderId"
+                                                        v-model="searchOrderId">
                                                 </th>
-                                                <th class="border-0 p-0 mr-1" style="padding-right: 5px !important;">
-                                                    <input type="text" placeholder="Start date" name=""
-                                                        onfocus="(this.type='date')" id="" class="form-control">
+                                                <th class="border-0 p-0 mr-1 custompadd">
+                                                    <input type="date" placeholder="Start date" v-model="startDate"
+                                                        class="form-control">
                                                 </th>
-                                                <th class="border-0 p-0 mr-1" style="padding-right: 5px !important;">
-                                                    <input type="text" placeholder="End date" name=""
-                                                        onfocus="(this.type='date')" id="" class="form-control">
+                                                <th class="border-0 p-0 mr-1 custompadd">
+                                                    <input type="date" placeholder="End date" v-model="endDate"
+                                                        class="form-control">
                                                 </th>
-                                                <th class="border-0 p-0 mr-1" style="padding-right: 5px !important;">
-                                                    <select name="" id="" class="form-control">
-                                                        <option value="">To be paid</option>
-                                                        <option value="">To be confiremed</option>
-                                                        <option value="">Goods To be receive</option>
-                                                        <option value="">Platform procced</option>
-                                                        <option value="">To be shipped</option>
-                                                        <option value="">Complete</option>
-                                                        <option value="">Canceled</option>
-                                                        <option value="">Returning</option>
-                                                        <option value="">Return complete</option>
-                                                        <option value="">Abnormal order</option>
-                                                    </select>
-                                                </th>
-                                                <th class="border-0 p-0 mr-1" style="padding-right: 5px !important;">
-                                                    <select name="" id="" class="form-control">
-                                                        <option value="" selected disabled>Status
+                                                <th class="border-0 p-0 mr-1 custompadd">
+
+                                                    <select v-model="selectedStatus" class="form-control">
+                                                        <!-- Loop over allStatus to create options -->
+                                                        <option v-for="status in allStatus" :key="status.id"
+                                                            :value="status.id">
+                                                            {{ status.name }}
                                                         </option>
-                                                        <option value="">Active</option>
-                                                        <option value="">Inactive</option>
                                                     </select>
                                                 </th>
+
                                                 <th class="border-0  p-0 h-100">
                                                     <button type="button" style="min-width: 90px;"
-                                                        class="btn btn-primary btn-fla"><i
+                                                        class="btn btn-primary btn-fla" @click="filterData"><i
                                                             class="fas fa-search"></i>Search</button>
                                                 </th>
                                             </tr>
                                         </thead>
                                     </table>
+
                                 </form>
+                            </div>
+                            <div class="loading-indicator" v-if="loading" style="text-align: center;">
+                                <Loader />
                             </div>
                             <div class="col-md-3 ">
                                 <div class="buttonList">
-                                    <a href="#" type="button" class="btn btn-primary btn-flat ">
+                                    <a href="#" type="button" class="btn btn-primary btn-flat" @click="orderProcess">
                                         <i class="fas fa-plus"></i>Create Auto order for all users
                                     </a>
                                     <a data-toggle="modal" data-target="#addorder" type="button mx-2"
@@ -128,45 +121,39 @@
                                         <th>Order Status</th>
                                         <th>Costing price($)</th>
                                         <th>Profit($)</th>
-
-                                        <th>creation time</th>
-                                        <th>Update time </th>
+                                        <th>Date</th>
                                         <td>Action </td>
                                     </tr>
 
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                    <tr v-for="item in productdata" :key="item.id">
                                         <td>
                                             <input type="checkbox" class="checkBox">
                                         </td>
                                         <td>
-                                            <h3>Order id: 98769234792342</h3>
+                                            <h3>Order id: {{ item.orderId }}</h3>
                                             <div class="d-flex">
-                                                <img src="/images/product(1).jpg" class="img-fluid" alt="">
                                                 <div>
-                                                    <h3>iPhone 15 pro </h3>
-                                                    <p>price: $120</p>
-
+                                                    <h3>{{ item.product_name }}</h3>
+                                                    <p>price: ${{ item.selling_price }}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="text-left">
-                                            <p>Name: test305</p>
-                                            <p>Cell phone: None</p>
-                                            <p>Email: None</p>
-                                            <p class="text-danger">Type: Vertual user</p>
+                                            <p>Name: {{ item.userInfo_1 }}</p>
+                                            <p>Cell phone: {{ item.userInfo_2 }}</p>
+                                            <p>Email: {{ item.userInfo_3 }}</p>
                                         </td>
-                                        <td>To be paid</td>
-                                        <td> 0.00</td>
-                                        <td> 2.06</td>
+                                        <td>{{ item.status }}</td>
+                                        <td>{{ item.costing_price }}</td>
+                                        <td>{{ item.profit }}</td>
+                                        <td>{{ item.order_date }}</td>
 
-                                        <td>2024-04-14 01:21:38</td>
-                                        <td>2024-04-14 01:21:38</td>
                                         <td>
                                             <div class="btn-group">
                                                 <button class="btn btn-default btn-sm btn-flat" data-toggle="modal"
-                                                    data-target="#details"> Details</button>
+                                                    @click="getDetails(item)" data-target="#details"> Details</button>
 
                                             </div>
                                         </td>
@@ -266,16 +253,17 @@
                     </div>
                     <div class="modal-body">
                         <div class="col-md-12 m-auto">
+                           
                             <table class="table">
                                 <tr>
                                     <td class="text-left">Basic information</td>
                                     <td>
-                                        <h3>Order id: 98769234792342</h3>
+                                        <h3>OrderID: {{ orderrow.orderId }}</h3>
                                         <div class="d-flex">
-                                            <img src="/images/product(1).jpg" class="img-fluid" alt="">
+
                                             <div>
-                                                <h3>iPhone 15 pro </h3>
-                                                <p>price: $120</p>
+                                                <h3>{{ orderrow.product_name }}</h3>
+                                                <p>price: ${{ orderrow.selling_price }}</p>
 
                                             </div>
                                         </div>
@@ -285,54 +273,48 @@
                                     <td class="text-left">User info </td>
 
                                     <td class="text-left">
-                                        <p>Name: test305</p>
-                                        <p>Cell phone: None</p>
-                                        <p>Email: None</p>
-                                        <p class="text-danger">Type: Vertual user</p>
+                                        <p>Name: {{ orderrow.userInfo_1 }}</p>
+                                        <p>Cell phone: {{ orderrow.userInfo_2 }}</p>
+                                        <p>Email: {{ orderrow.userInfo_3 }}</p>
+
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-left">Order Status</td>
-                                    <td class="text-left"><span class="text-danger">To be Paid </span></td>
+                                    <td class="text-left"><span class="text-danger">{{ orderrow.status }}</span></td>
                                 </tr>
                                 <tr>
                                     <td class="text-left">Costing price($)</td>
-                                    <td class="text-left"><span class="text-success">$00.00</span></td>
+                                    <td class="text-left"><span class="text-success">${{ orderrow.costing_price
+                                            }}</span></td>
                                 </tr>
                                 <tr>
                                     <td class="text-left">Profit($)</td>
-                                    <td class="text-left">$00.00</td>
+                                    <td class="text-left">${{ orderrow.profit }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-left">creation time</td>
-                                    <td class="text-left">2024-04-19 09:00:04</td>
+                                    <td class="text-left">Date</td>
+                                    <td class="text-left">{{ orderrow.order_date }}</td>
                                 </tr>
-                                <tr>
-                                    <td class="text-left">Update time</td>
-                                    <td class="text-left">2024-04-19 09:00:04</td>
-                                </tr>
+
                             </table>
-                            <form action="" class="form-group">
+
+                            <form @submit.prevent="saveData()" id="formrest" class="form-group" enctype="multipart/form-data">
                                 <div class="form-group">
                                     <label for="">Order Status</label>
-                                    <select name="" id="" class="form-control">
-                                        <option value="">To be paid</option>
-                                        <option value="">To be confiremed</option>
-                                        <option value="">Goods To be receive</option>
-                                        <option value="">Platform procced</option>
-                                        <option value="">To be shipped</option>
-                                        <option value="">Complete</option>
-                                        <option value="">Canceled</option>
-                                        <option value="">Returning</option>
-                                        <option value="">Return complete</option>
-                                        <option value="">Abnormal order</option>
-                                    </select>
+                                    <select v-model="selectedStatus" class="form-control">
+                                                        <!-- Loop over allStatus to create options -->
+                                                        <option v-for="status in allStatus" :key="status.id"
+                                                            :value="status.id">
+                                                            {{ status.name }}
+                                                        </option>
+                                                    </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="">Status</label>
-                                    <select name="" id="" class="form-control">
-                                        <option value="">Active</option>
-                                        <option value="">Inactive</option>
+                                    <select v-model="status" class="form-control">
+                                        <option value="1">Active</option>
+                                        <option value="2">Inactive</option>
                                     </select>
                                 </div>
                                 <button class="btn btn-primary w-100" type="submit">Update</button>
@@ -343,42 +325,152 @@
             </div>
         </div>
 
-
+        <center>
+            <div class="pagination" style="text-align: center">
+                <button :disabled="currentPage === 1" @click="fetchData(currentPage - 1)">
+                    Previous
+                </button>
+                <template v-for="pageNumber in displayedPages" :key="pageNumber">
+                    <button @click="fetchData(pageNumber)">
+                        {{ pageNumber }}
+                    </button>
+                </template>
+                <button :disabled="currentPage === totalPages" @click="fetchData(currentPage + 1)">
+                    Next
+                </button>
+            </div>
+        </center>
 
 
     </div>
 </template>
-<script setup>
-import { ref, watch, onMounted } from "vue";
-import axios from "axios";
 
+<script setup>
+import { ref, reactive, onMounted } from 'vue';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useRouter } from 'vue-router';
+const router = useRouter();
+const startDate = ref('');
+const endDate = ref('');
+const allStatus = ref([]);
+const status = ref('');
+const selectedStatus = ref(1);
 definePageMeta({
     middleware: 'is-logged-out',
 })
 
-const router = useRouter();
 const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = 10;
 const totalRecords = ref(0);
 const totalPages = ref(0);
 const productdata = ref([]);
-const searchQuery = ref(""); // Add a ref for the search query
+
+const searchUserEmail = ref(""); // Add a ref for the search query
+const searchOrderId = ref(""); // Add a ref for the search query
 const selectedFilter = ref(1); // Add a ref for the search query
 
 
-const getDtails = () => {
-    $('#details').modal('show');
+
+const orderrow = reactive({
+    orderId: '',
+    product_name: '',
+    selling_price: '',
+    userInfo_1: '',
+    userInfo_2: '',
+    userInfo_3: '',
+    status: '',
+    costing_price: '',
+    profit: '',
+    order_date: '',
+
+});
+
+
+const saveData = () => {
+  const formData = new FormData();
+
+  formData.append('order_id', orderrow.orderId);
+  formData.append('selectedStatus', selectedStatus.value);
+  formData.append('status', status.value);
+
+  axios.post('/order/updateOrder', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }).then((res) => {
+
+    $('#formrest')[0].reset();
+    success_noti();
+
+
+//details
+  }).catch(error => {
+    if (error.response && error.response.status === 422) {
+      errors.value = error.response.data.errors;
+    } else {
+      // Handle other types of errors here
+      console.error("An error occurred:", error);
+    }
+  });
+};
+
+
+const success_noti = () => {
+  //alert("Your data has been successfully inserted.");
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 1000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
+  Toast.fire({
+    icon: "success",
+    title: "Successfully update."
+  });
+};
+
+const getDetails = (item) => {
+
+    loading.value = true; // Set loading to true
+    // Simulate a delay (3 seconds)
+    setTimeout(() => {
+        // Update orderrow with item details
+        orderrow.orderId = item.orderId;
+        orderrow.product_name = item.product_name;
+        orderrow.selling_price = item.selling_price;
+        orderrow.userInfo_1 = item.userInfo_1;
+        orderrow.userInfo_2 = item.userInfo_2;
+        orderrow.userInfo_3 = item.userInfo_3;
+        orderrow.status = item.status;
+        orderrow.costing_price = item.costing_price;
+        orderrow.profit = item.profit;
+        orderrow.order_date = item.order_date;
+        // Set loading to false after the delay
+        loading.value = false;
+    }, 1000); // 3-second delay
 }
+
+
+//Pagniation with filter
 const fetchData = async (page) => {
     try {
         loading.value = true;
-        const response = await axios.get(`/product/getProductList`, {
+        const response = await axios.get(`/order/filterOrderList`, {
             params: {
                 page: page,
                 pageSize: pageSize,
-                searchQuery: searchQuery.value, // Pass the search query parameter
-                selectedFilter: selectedFilter.value, // Pass the search query parameter
+                searchUserEmail: searchUserEmail.value,
+                searchOrderId: searchOrderId.value,
+                startDate: startDate.value,
+                endDate: endDate.value,
+                selectedStatus: selectedStatus.value,
             },
         });
         productdata.value = response.data.data;
@@ -390,46 +482,6 @@ const fetchData = async (page) => {
     } finally {
         loading.value = false;
     }
-};
-
-onMounted(() => {
-    fetchData(currentPage.value);
-});
-
-// Watch for changes in current page and fetch data accordingly
-watch(currentPage, (newPage) => {
-    fetchData(newPage);
-});
-
-// Define a method to handle editing
-const edit = (id) => {
-
-    router.push({
-        path: '/products/edit',
-        query: {
-            parameter: id
-        }
-    });
-
-    // Your logic for editing goes here
-    console.log('Editing item with id:', id);
-};
-
-// Define a method to handle deleting
-const deleteProduct = (id) => {
-    // Your logic for deleting goes here
-    console.log('Deleting item with id:', id);
-};
-
-// Define a method to handle previewing
-const preview = (id) => {
-    router.push({
-        path: '/products/preview',
-        query: {
-            parameter: id
-        }
-    });
-    console.log('Previewing item with id:', id);
 };
 
 // Compute the range of displayed pages
@@ -449,10 +501,42 @@ const displayedPages = computed(() => {
     );
 });
 
+// Watch for changes in current page and fetch data accordingly
+watch(currentPage, (newPage) => {
+    fetchData(newPage);
+});
+
+
+const orderProcess = async () => {
+    try {
+        loading.value = true;
+        const response = await axios.post(`/order/assignOrder`);
+        console.log("Successfully assign order...");
+    } catch (error) {
+        console.error(error);
+    } finally {
+        loading.value = false;
+    }
+}
+const getOrderStatusList = () => {
+    axios.get(`/order/getOrderStatus`).then(response => {
+        allStatus.value = response.data;
+    });
+};
+
 
 const filterData = () => {
     fetchData(1); // Reset to first page when search query changes
 };
+
+onMounted(() => {
+    fetchData(currentPage.value);
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    startDate.value = today; // Set the default date to today
+    endDate.value = today;
+    getOrderStatusList();
+});
+//orderProcess
 </script>
 
 
@@ -526,5 +610,10 @@ td {
 
 tr:hover {
     background-color: rgb(221, 221, 221);
+}
+
+.custompadd {
+    padding-right: 5px !important;
+
 }
 </style>
