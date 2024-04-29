@@ -55,6 +55,7 @@ Route::group([
 Route::group([
     'prefix' => 'order'
 ], function () {
+    Route::get('sendConfirmOrders', [OrderController::class, 'sendConfirmOrders']);
     Route::post('updateOrder', [OrderController::class, 'updateOrder']);
     Route::get('getOrderStatus', [OrderController::class, 'getOrderStatus']);
     Route::get('filterOrderList', [OrderController::class, 'filterOrderList']);
@@ -231,6 +232,7 @@ Route::group([
     'middleware' => 'api',
     'prefix' => 'dropUser'
 ], function () {
+    Route::get('report', [DropUserController::class, 'report']);
     Route::get('getCurrentBalance', [DropUserController::class, 'getCurrentBalance']);
     Route::post('depositRequest', [DropUserController::class, 'depositRequest']);
     Route::post('withdrawRequest', [DropUserController::class, 'withdrawRequest']);

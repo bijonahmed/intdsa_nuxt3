@@ -59,7 +59,7 @@
                                         </div>
                                         <div class="dash_box">
                                             <div class="dash_C">
-                                                <h1>$0</h1>
+                                                <h1>${{ chkPendingOrder }}</h1>
                                                 <h3>In transaction<button type="button" class="btn_i"><i
                                                             class="fa-solid fa-circle-info"></i>
                                                         <p class="text-center">Generally in pre transaction, Withdrawal,
@@ -496,6 +496,7 @@ const withdrawArr = ref([]);
 const searchDOrderId = ref('');
 const searchWOrderId = ref('');
 const current_balance = ref('');
+const chkPendingOrder = ref('');
 
 //Payment getway
 const payurl = ref('');
@@ -751,6 +752,10 @@ const getCurrentBalance = async () => {
         let response;
         response = await axios.get("/dropUser/getCurrentBalance");
         current_balance.value = response.data.current_balance;
+        chkPendingOrder.value = response.data.chkPendingOrderStatus;
+
+
+
     } catch (error) {
         console.error("Error fetching deposit list:", error);
     }
@@ -791,7 +796,7 @@ const withdrawalList = async () => {
             response = await axios.get("/dropUser/withDrawalRequestList");
         }
         withdrawArr.value = response.data.data;
-        console.log('sdfssdfsd' + response.data.data);
+        console.log('request' + response.data.data);
     } catch (error) {
         console.error("Error fetching withdrawal list:", error);
     } finally {
@@ -799,10 +804,7 @@ const withdrawalList = async () => {
     }
 };
 
-
-const timer = () => {
-    console.log("timer start...");
-}
+ 
 
 onMounted(() => {
     depositList();

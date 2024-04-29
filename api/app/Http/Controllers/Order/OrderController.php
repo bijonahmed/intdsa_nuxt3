@@ -14,6 +14,7 @@ use App\Models\OrderStatus;
 use App\Models\OrderHistory;
 use App\Models\ProductCategory;
 use App\Models\CategoryCommissionHistory;
+use App\Models\ExpenseHistory;
 use App\Models\Mystore;
 use App\Models\MystoreHistory;
 use App\Models\WishList;
@@ -37,7 +38,36 @@ class OrderController extends Controller
         }
     }
 
-    public function orderlist()
+
+    public function sendConfirmOrders(Request $request)
+    {
+
+        $orderId = $request->orderId;
+
+        $updateOrder['order_status'] = 2; //To be confirmed
+        Order::where('orderId', $orderId)->update($updateOrder);
+
+        $chkPendingOrderStatus = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->sum('buying_price');
+
+        $expData['user_id']             =  $this->userid;
+        $expData['operation_type']      =  "ConfirmOrder";
+        $expData['operation_amount']    =  $chkPendingOrderStatus;
+        $expData['charge_description']  =  "Confirm Order";
+        $expData['operation_date']      =  date("Y-m-d");
+        ExpenseHistory::insertGetId($expData);
+
+        $response       = app('App\Http\Controllers\Dropshipping\DropUserController')->getCurrentBalance();
+        $currentBalance = $response instanceof JsonResponse ? $response->getData(true)['current_balance'] : 0;
+
+        $data['pendingOrders']  = number_format($chkPendingOrderStatus,2);
+        $data['currentBalance'] = $currentBalance;
+
+        return response()->json($data, 200);
+ 
+
+    }
+
+    public function orderlist(Request $request)
     {
 
         $customTimeZone = 'Asia/Dhaka';
@@ -101,7 +131,6 @@ class OrderController extends Controller
                 }
                 //END Logic
             }
-
             //dd($productsArr);
             // Insert multiple records into the database
             /*
@@ -115,13 +144,46 @@ class OrderController extends Controller
                 }
             }
             */
-            $productsArr = Order::where('user_id', $this->userid)
+
+            $searchByOrderId = !empty($request->searchByOrderId) ? $request->searchByOrderId : "";
+            $order_status    = !empty($request->order_status) ? $request->order_status : "";
+
+            $currentDateTime = Carbon::now();
+            $tenHoursAhead = $currentDateTime->copy()->addHours(10);
+
+            $query  = Order::where('user_id', $this->userid)
                 ->where('order_date', $current_date)
-                ->where('status', 1)
-                ->whereRaw("HOUR(order_inactive_time) > ?", [$currentHour])->get();
+                ->where('orders.status', 1); // Include the 10-hour window
+            // Apply additional condition if searchByOrderId is set
+
+            // Instead of using raw SQL for hour comparison, use datetime comparisons
+
+            //$query->where('order_inactive_time', '>=', $currentDateTime) // Orders inactive after now
+             //   ->where('order_inactive_time', '<=', $tenHoursAhead);  // Orders inactive within 10 hours
+
+            //dd($query);
+
+            // Join the order_status table on the status column
+            $query->join('order_status', 'order_status.id', '=', 'orders.order_status')
+                ->select('orders.*', 'order_status.name as status_name'); // Example of selecting fields
+
+            if (!empty($searchByOrderId)) {
+                $query->where('orderId', $searchByOrderId);
+            }
+            if (!empty($order_status)) {
+                 $query->where('orders.order_status', $order_status);
+            }
+
+            $productsArr = $query->get();
+
+            $orderStatus = OrderStatus::where('status', 1)->get();
+            $chkPendingOrder = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->sum('buying_price');
             // dd($productsArr);
-            $data['product_count'] = count($productsArr);
-            $data['products']      = $productsArr;
+            $data['product_count']     = count($productsArr);
+            $data['products']          = $productsArr;
+            $data['currentBalance']    = number_format($currentBalance,2);
+            $data['orderStatus']       = $orderStatus;
+            $data['chkPendingOrder']   = number_format($chkPendingOrder,2);
             return response()->json($data, 200);
         } else {
             //echo "No active stores found.";
@@ -357,16 +419,16 @@ class OrderController extends Controller
     }
 
 
-    public function updateOrder(Request $request){
+    public function updateOrder(Request $request)
+    {
 
 
-        $order_id               = $request->order_id; 
+        $order_id               = $request->order_id;
         $data['order_status']   = (int)$request->selectedStatus;
         $data['status']         = (int)$request->status;
         Order::where('orderId', $order_id)->update($data);
 
         return response()->json("Update successfully", 200);
-
     }
 
     public function getOrderStatus()

@@ -30,6 +30,7 @@ use Illuminate\Support\Str;
 use App\Rules\MatchOldPassword;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
+use Carbon\Carbon;
 use Session;
 use DB;
 use Curl\Curl;
@@ -44,6 +45,68 @@ class DropUserController extends Controller
         $user = User::find($id->id);
         $this->userid = $user->id;
     }
+
+
+    public function report(){
+
+
+        $currentMonthStart = Carbon::now()->startOfMonth();  // First day of the current month
+        $currentMonthEnd   = Carbon::now()->endOfMonth();  // Last day of the current month
+
+        $lastMonthStart    = Carbon::now()->subMonth()->startOfMonth(); // First day of last month
+        $lastMonthEnd      = Carbon::now()->subMonth()->endOfMonth(); // Last day of last month
+
+
+        $chkPendingOrderStatus    = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->count();
+        $availableBalatransection = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->sum('buying_price');
+        $numberOfComplatation     = Order::where('user_id',$this->userid)->whereIn('order_status',[6])->count();
+
+
+
+
+        $currentMonth             = Order::where('user_id', $this->userid)
+                                    ->whereBetween('order_date', [$currentMonthStart, $currentMonthEnd]) // Orders within current month
+                                    ->whereIn('order_status', [2, 3, 4, 5, 6]) // Specific statuses
+                                    ->count();  // Get the total count of such orders 
+
+        $lastMonthOrders          = Order::where('user_id', $this->userid)
+                                    ->whereBetween('order_date', [$lastMonthStart, $lastMonthEnd]) // Orders from last month
+                                    ->whereIn('order_status', [2, 3, 4, 5, 6]) // Specific statuses
+                                    ->count(); // Get all matching orders
+
+
+        $totalSale               = Order::where('user_id', $this->userid)
+                                 ->whereIn('order_status', [2, 3, 4, 5, 6]) // Specific statuses
+                                 ->sum('selling_price'); // Get all matching orders
+
+        //Total Seles 
+        $toalSalescurrentMonth  = Order::where('user_id', $this->userid)
+                                 ->whereBetween('order_date', [$currentMonthStart, $currentMonthEnd]) // Orders within current month
+                                 ->whereIn('order_status', [2, 3, 4, 5, 6]) // Specific statuses
+                                 ->sum('selling_price');  // Get the total count of such orders 
+
+
+        $toalSaleslastMonth       = Order::where('user_id', $this->userid)
+                                    ->whereBetween('order_date', [$lastMonthStart, $lastMonthEnd]) // Orders from last month
+                                    ->whereIn('order_status', [2, 3, 4, 5, 6]) // Specific statuses
+                                    ->sum('selling_price');  // Get all matching orders
+
+   
+        $data['pendingOrders']  = $chkPendingOrderStatus;
+        $data['currentMonth']   = $currentMonth;
+        $data['lastMonthOrders']= $lastMonthOrders;
+        $data['totalSale']      = number_format($totalSale,2);
+
+        $data['toalSalescurrentMonth']     = number_format($toalSalescurrentMonth,2);
+        $data['toalSaleslastMonth']        = number_format($toalSaleslastMonth,2);
+        $data['availableBalatransection']  = number_format($availableBalatransection,2);
+        $data['numberOfComplatation']      = $numberOfComplatation;
+
+        return response()->json($data, 200);
+
+    }
+
+
 
     public function checkWithdrawalMethod()
     {
@@ -433,21 +496,25 @@ class DropUserController extends Controller
     public function getCurrentBalance()
     {
           // WORNING MESSAGES IF YOU CHANGE INSIDE METHOD PLEAE INSITANT CHANGE THIS METHOD: getCurrentBalanceCheckAdminIndivUser
-        $user_id = $this->userid;
-        $manAdjstSum = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',1)->sum('adjustment_amount');
-        $manAdjstMinus = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',2)->sum('adjustment_amount');
-
-        $depositAmt       = Deposit::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
-        $withdrawAmt      = Withdraw::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
-        $expense_history  = ExpenseHistory::where('user_id', $user_id)->sum('operation_amount');
+        $user_id           = $this->userid;
+        $manAdjstSum       = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',1)->sum('adjustment_amount');
+        $manAdjstMinus     = ManualAdjustment::where('user_id', $user_id)->where('adjustment_type',2)->sum('adjustment_amount');
+        $depositAmt        = Deposit::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
+        $withdrawAmt       = Withdraw::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
+        $expense_history   = ExpenseHistory::where('user_id', $user_id)->sum('operation_amount');
+        $chkPendingOrderStatus   = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->sum('buying_price');
         // echo "deposit amount: $depositAmt ----- withdrawamt :$withdrawAmt: expense history: $expense_history";
         //exit;
-        $result          = $depositAmt - $withdrawAmt - $expense_history + $manAdjstSum - $manAdjstMinus;
+        $result          = $depositAmt - $withdrawAmt - $expense_history + $manAdjstSum - $manAdjstMinus - $chkPendingOrderStatus;
         $data['current_balance'] = number_format($result, 2); // Formated Balance 
         $data['currentbalance']  = $result; //Without Format balance 
+        $data['chkPendingOrderStatus']=$chkPendingOrderStatus;
+        
         //available_balance
         $udata['available_balance']=$data['current_balance'];
         User::where('id', $this->userid)->update($udata);
+       
+       
         return response()->json($data, 200);
     }
 
@@ -460,15 +527,18 @@ class DropUserController extends Controller
         $depositAmt       = Deposit::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
         $withdrawAmt      = Withdraw::where('user_id', $user_id)->where('status', 1)->sum('receivable_amount');
         $expense_history  = ExpenseHistory::where('user_id', $user_id)->sum('operation_amount');
+        $chkPendingOrderStatus = Order::where('user_id',$this->userid)->whereIn('order_status',[2,3,4,5])->sum('buying_price');
      
         // echo "deposit amount: $depositAmt ----- withdrawamt :$withdrawAmt: expense history: $expense_history";
         //exit;
-        $result          = $depositAmt - $withdrawAmt - $expense_history + $manAdjstSum - $manAdjstMinus;
+        $result          = $depositAmt - $withdrawAmt - $expense_history + $manAdjstSum - $manAdjstMinus  - $chkPendingOrderStatus;
         $data['current_balance'] = number_format($result, 2); // Formated Balance 
         $data['currentbalance']  = $result; //Without Format balance 
+        $data['chkPendingOrderStatus']=$chkPendingOrderStatus;
         //available_balance
         $udata['available_balance']=$data['current_balance'];
         User::where('id', $user_id)->update($udata);
+      
         return response()->json($data, 200);
     }
 

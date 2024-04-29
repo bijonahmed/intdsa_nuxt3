@@ -38,9 +38,9 @@
                                 <!-- content part start here  -->
                                 <div class="s_content">
                                     <div class="dash_C mb-3">
-                                        <h3>Available ammount: $0</h3>
+                                        <h3>Available amount: ${{ currentBalance }}</h3>
                                         <h3>Estimate profit: $0</h3>
-                                        <h3>Pending orders: $0</h3>
+                                        <h3>Pending orders: ${{ pendingOrders }}</h3>
                                     </div>
                                     <div class="row align-items-center btns_">
                                         <div class="col-xl-8 mb-2">
@@ -49,7 +49,7 @@
                                                     <div>
                                                         <!-- <p>Essential information</p> -->
                                                         <input type="text" class="form-control"
-                                                            placeholder="Search by order id">
+                                                            placeholder="Search by order id" v-model="searchByOrderId">
                                                     </div>
                                                     <div class="mx-2">
                                                         <!-- <p>Month</p> -->
@@ -61,19 +61,12 @@
                                                     </div>
                                                     <div>
                                                         <!-- <p>Order status</p> -->
-                                                        <select name="" class="form-control" id="">
-                                                            <option value="1">To be paid</option>
-                                                            <option value="2">To be confiremed</option>
-                                                            <option value="3">Goods To be received</option>
-                                                            <option value="4">Platform procced</option>
-                                                            <option value="5">To be shipped</option>
-                                                            <option value="6">Complete</option>
-                                                            <option value="7">Canceled</option>
-                                                            <option value="8">Returning</option>
-                                                            <option value="9">Return complete</option>
-                                                            <option value="10">Abnormal order</option>
+                                                        <select class="form-control" v-model="order_status">
+                                                            <option v-for="status in orderStatus" :key="status.id"
+                                                                :value="status.id">
+                                                                {{ status.name }}
+                                                            </option>
                                                         </select>
- 
 
                                                     </div>
                                                 </div>
@@ -82,9 +75,9 @@
                                         <div class="col-xl-4 mb-2">
                                             <form action="">
                                                 <div class="d-flex align-items-center justify-content-md-end">
-                                                    <button type="button" class="btn btn-outline-secondary "><i
-                                                            class="fa-solid me-2 fa-rotate-right"></i>Reset</button>
-                                                    <button type="button" class="btn mx-1 btn-success " @click="orderList"><i
+                                                   
+                                                    <button type="button" class="btn mx-1 btn-success "
+                                                        @click="orderList"><i
                                                             class="fa-solid fa-magnifying-glass me-2"></i>Search</button>
                                                 </div>
                                             </form>
@@ -113,7 +106,8 @@
                                             <tbody>
                                                 <tr v-for="pro in productArray" :key="pro.id">
                                                     <td>
-                                                        <h6 class="d-flex align-items-center"><small>Order ID: {{ pro.orderId}}</small></h6>
+                                                        <h6 class="d-flex align-items-center"><small>Order ID: {{
+                                                            pro.orderId }}</small></h6>
                                                         <div class="t_product">
                                                             <img :src="pro.thumnail_img" class="img-fluid"
                                                                 loading="lazy" alt="">
@@ -125,7 +119,7 @@
                                                         </div>
                                                     </td>
                                                     <td>{{ pro.order_date }}</td>
-                                                    <td>{{ pro.order_status }}</td>
+                                                    <td>{{ pro.status_name }}</td>
                                                     <td>${{ pro.selling_price }}</td>
                                                     <td>{{ pro.profit.toFixed(2) }}</td>
                                                     <td>{{ pro.product_qty }}</td>
@@ -136,7 +130,7 @@
                                                                 style="font-size: 12px;"><i
                                                                     class="fa-regular fa-eye me-1"
                                                                     style="font-size: 12px;"></i>Details</nuxt-link>
-                                                            <a @click="suc_mdal()"
+                                                            <a @click="suc_mdal(pro)"
                                                                 class="btn payment_ btn-primary w-100 d-flex align-items-center text-dark"
                                                                 style="font-size: 12px; color:black"><i
                                                                     class="fa-brands fa-paypal me-1"></i>Payment</a>
@@ -166,7 +160,7 @@
             <div class="confirm_mdal modal_">
                 <div class="mdal_content">
                     <div class="m_head">
-                        <div class="w-50"></div>
+                        <div class="w-50" v-if="storeOrderId">Order ID:{{ storeOrderId }}</div>
                         <button class="bt_close" @click="cls_modal">
                             <i class="fa-solid fa-x"></i>
                         </button>
@@ -176,7 +170,8 @@
                             <p class="text-black text-center">The goods will be paid as operating system, Are you sure
                                 you want to
                                 continue?</p>
-                            <button type="button" class="btn btn-primary bt_lose w-100 mt-3 bt_s">Continue</button>
+                            <button type="button" class="btn btn-primary bt_lose w-100 mt-3 bt_s"
+                                @click="orderrConfirm">Continue</button>
                         </div>
                     </div>
                 </div>
@@ -195,25 +190,92 @@ definePageMeta({
     middleware: 'is-logged-out',
 })
 
-const suc_mdal = () => {
+const storeOrderId = ref();
+
+const loading = ref(false);
+const productArray = ref([]);
+const orderStatus = ref([]);
+const orderBatch = ref([]);
+
+const currentBalance = ref(0);
+const pendingOrders = ref(0);
+
+const order_status = ref(1);
+const searchByOrderId = ref();
+
+const suc_mdal = (pro) => {
+
+    console.log("records set: " + pro);
+    orderBatch.value = pro; 
+    storeOrderId.value = pro.orderId;
     $(".confirm_mdal").fadeIn();
+
 }
+
 const cls_modal = () => {
     $(".modal_").fadeOut();
 }
 
+const orderrConfirm = async () => {
 
-const loading = ref(false);
-const productArray = ref([]);
+    try {
+        loading.value = true; // Set loading to true before making the request
+        const res = await axios.get("/order/sendConfirmOrders", {
+            params: {
+                orderId: storeOrderId.value, // Include the search parameter
+            },
+        });
+
+
+        currentBalance.value = res.data.currentBalance;
+        pendingOrders.value = res.data.pendingOrders;
+        console.log("pendingOrders" + res.data.pendingOrders);
+        console.log("currentBalance" + res.data.currentBalance);
+
+
+        cls_modal();
+        orderList();
+
+        const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 1000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+            }
+        });
+        Toast.fire({
+            icon: "success",
+            title: "Successfully order send."
+        });
+        return false;
+
+        //productArray.value = response.data.products;
+    } catch (error) {
+        console.error("Error fetching product list:", error);
+    } finally {
+        loading.value = false; // Set loading to false after the request completes (whether success or failure)
+    }
+
+}
 
 const orderList = async () => {
     try {
         loading.value = true; // Set loading to true before making the request
 
-        const res = await axios.get("/order/orderlist");
-       // console.log("===" + res.data.products);
+        const res = await axios.get("/order/orderlist", {
+            params: {
+                searchByOrderId: searchByOrderId.value, // Include the search parameter
+                order_status: order_status.value,
+            },
+        });
         productArray.value = res.data.products;
-
+        currentBalance.value = res.data.currentBalance;
+        orderStatus.value = res.data.orderStatus;
+        pendingOrders.value = res.data.chkPendingOrder;
         //productArray.value = response.data.products;
     } catch (error) {
         console.error("Error fetching product list:", error);
@@ -222,11 +284,9 @@ const orderList = async () => {
     }
 };
 
-
 onMounted(() => {
     orderList();
 
 });
-
 
 </script>
