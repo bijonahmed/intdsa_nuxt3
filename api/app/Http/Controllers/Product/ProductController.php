@@ -65,7 +65,7 @@ class ProductController extends Controller
             foreach ($products_in_range as $pro_row) {
                 $productsArr[] = [
                     'product_id'        => $pro_row->id,
-                    'product_name'      => $pro_row->name,
+                    'product_name'      => substr($pro_row->name, 0, 60) . '...',///$pro_row->name,
                     'selling_price'     => $pro_row->selling_price,
                     'order_date'        => date("Y-m-d"),
                     'profit'            => $pro_row->profit,

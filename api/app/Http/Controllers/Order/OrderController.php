@@ -39,6 +39,8 @@ class OrderController extends Controller
     }
 
 
+
+
     public function sendConfirmOrders(Request $request)
     {
 
@@ -48,7 +50,7 @@ class OrderController extends Controller
         // Condition to check if current balance is zero or negative
         if ($currentBalance <= 0) {
             // If balance is zero or negative, return an error message or perform another action
-            $data['error'] = "Cannot deposit: Current balance is zero or negative";
+            $data['error'] = "Current balance is zero or negative";
             $data['error_status'] = 1;
             return response()->json($data);
         } else {
@@ -196,6 +198,84 @@ class OrderController extends Controller
         }
     }
 
+
+    public function sendManualOrderAdmin(Request $request)
+    {
+ 
+        $validator = Validator::make($request->all(), [
+            'userId'                => 'required',
+            'selectedcategoryId'    => 'required',
+            'selectedProductIDs'    => 'required',
+          
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+
+        $user_id            = $request->userId;
+        $selectedcategoryId = $request->selectedcategoryId;
+        $selectedProductIDs = $request->selectedProductIDs;
+        $productIDsArray    = explode(',', $selectedProductIDs);
+
+
+        $customTimeZone = 'Asia/Dhaka';
+        $startTime = Carbon::now($customTimeZone);
+        $currentHour = $startTime->hour;
+    
+        $currentTime = Carbon::now($customTimeZone);
+        // Add 8 hours to the current datetime
+        $currentTime->addHours(10);
+        // Format the datetime as needed
+        $currentTimeFormatted = $currentTime->format('Y-m-d H:i:s');
+        $current_date   = date("Y-m-d");
+
+        $response       = app('App\Http\Controllers\Dropshipping\DropUserController')->getCurrentBalanceCheckAdminIndivUser($user_id);
+        $currentBalance = $response instanceof JsonResponse ? $response->getData(true)['currentbalance'] : 0;
+        $amount         = $currentBalance * 2;
+        $max_price      = $amount;
+
+
+        $productsArr = [];
+        foreach ($productIDsArray as $productID) {
+            $pro_row= Product::where('id',$productID)->first();
+            $productsArr[] = [
+                'product_id'          => $pro_row->id,
+                'product_name'        => $pro_row->name,
+                'selling_price'       => $pro_row->selling_price,
+                'order_date'          => date("Y-m-d"),
+                'created_at'          => $startTime,
+                'order_inactive_time' => $currentTimeFormatted,
+                'profit'              => $pro_row->profit,
+                'user_id'             => $user_id,
+                'orderId'             => $this->generateUniqueRandomNumber(),
+                'product_qty'         => 1,
+                'buying_price'        => $pro_row->buying_price,
+                'user_balance'        => $currentBalance,
+                'user_mul_balance'    => $amount,
+                'order_status'        => 1, //To be paid.
+                'order_type'          => 'indivisual', //To be paid.
+                'thumnail_img'        => !empty($pro_row->thumnail_img) ? url($pro_row->thumnail_img) : "",
+            ];
+        }
+
+
+        if (!empty($productsArr)) {
+            $existingOrder = Order::whereDate('order_date', $current_date)->first();
+            if (!$existingOrder) {
+                // If no existing order found, proceed with the insertion
+                Order::insert($productsArr);
+            }
+        }
+
+        return response()->json("Successfully assign order send", 200);
+
+
+    }
+
+
+
+
     public function assignOrder(Request $request)
     {
 
@@ -230,8 +310,8 @@ class OrderController extends Controller
                 $max_price      = $amount;
 
                 //echo "My Store ID: " . $store->mystore_id . ": CategoryID:". $store->category_id. " - End Date: " . $store->end_date . "\n";
-                $category_id = $store->category_id;
-                $user_id = $store->user_id;
+                $category_id    = $store->category_id;
+                $user_id        = $store->user_id;
                 $pro_category = ProductCategory::where('category_id', $category_id)->pluck('product_id')->toArray();
                 //Start Logic
                 if (!empty($pro_category)) {
@@ -259,6 +339,7 @@ class OrderController extends Controller
                             'user_balance'      => $currentBalance,
                             'user_mul_balance'  => $amount,
                             'order_status'      => 1, //To be paid.
+                            'order_type'        => 'all_users', //To be paid.
                             'thumnail_img'      => !empty($pro_row->thumnail_img) ? url($pro_row->thumnail_img) : "",
                         ];
                     }

@@ -55,6 +55,7 @@ Route::group([
 Route::group([
     'prefix' => 'order'
 ], function () {
+    Route::post('sendManualOrderAdmin', [OrderController::class, 'sendManualOrderAdmin']);
     Route::get('sendConfirmOrders', [OrderController::class, 'sendConfirmOrders']);
     Route::post('updateOrder', [OrderController::class, 'updateOrder']);
     Route::get('getOrderStatus', [OrderController::class, 'getOrderStatus']);

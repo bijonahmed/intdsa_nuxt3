@@ -138,7 +138,6 @@ const manualAdjment = reactive({
 
 //Submit
 const saveManualAdjustment = () => {
-    
     const formData = new FormData();
     formData.append('userId', userId.value);
     formData.append('query', manualAdjment.query);

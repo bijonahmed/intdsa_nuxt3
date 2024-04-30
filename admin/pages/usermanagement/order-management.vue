@@ -174,7 +174,7 @@
         <!-- add manual order modal  -->
         <div class="modal fade" id="addorder" tabindex="-1" role="dialog" aria-labelledby="detailsTitle"
             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-scrollable" role="document">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header py-1">
                         <h5 class="modal-title" id="detailsTitle">Create Individual User</h5>
@@ -184,16 +184,19 @@
                     </div>
                     <div class="modal-body">
                         <center>
-                            <h4 v-if="currentBalance">
-                                Current Balance : ${{ currentBalance }}
-                            </h4>
+                            <span v-if="currentBalance">
+                                <b>Current Balance : ${{ currentBalance }}</b>
+                            </span>
                         </center>
                         <div class="col-md-12 m-auto">
-                            <form action="">
+                            <form @submit.prevent="maualOrderSubmit" id="formrest" 
+                                enctype="multipart/form-data">
                                 <div class="form-group">
                                     <label for="">Users</label>
                                     <input type="text" :value="query" @input="onInput"
                                         placeholder="Search for users by email" class="form-control" />
+                                        <span class="text-danger" v-if="errors.userId">{{ errors.userId[0]
+                                                }}</span>
                                     <div v-if="users.length > 0" class="autocomplete-results">
                                         <ul>
                                             <li v-for="user in users" :key="user.id" @click="selectUser(user)">
@@ -211,22 +214,37 @@
                                             {{ store.name }}
                                         </option>
                                     </select>
+
+                                    <span class="text-danger" v-if="errors.selectedcategoryId">{{ errors.selectedcategoryId[0]}}</span>
+
+
                                 </div>
-                                <h6>Sum of select product: <strong>$258.00</strong></h6>
+                              
+                                <h6 v-if="totalBuyingPrice">
+                                  <div class="row">
+                                  <div class="container">
+                                    Sum of select product: <strong>${{totalBuyingPrice.toFixed(2)}}</strong>
+                                    <p>Selected Product IDs: {{ selectedProductIDs }}</p>
+                                  </div>
+                                  </div>
+                                </h6>
                                 <div class="proListh">
                                     <table class="table">
-                                        <tr v-for="product in prodcutsArray" :key="product.id">
+                                        <tr v-for="product in prodcutsArray" :key="product.product_id"
+                                            @click="onRowClick(product.product_id)">
                                             <td>
                                                 <!-- Checkbox with binding to check if it's selected -->
-                                                <input type="checkbox" v-model="product.selected">
+                                                <input type="checkbox" :checked="isProductSelected(product.product_id)"
+                                                    @click="toggleCheckbox($event, product.product_id)">
                                             </td>
                                             <td>{{ product.product_name }}</td> <!-- Product name -->
                                             <td><strong>${{ product.buying_price }}</strong></td>
                                             <!-- Product price -->
                                         </tr>
                                     </table>
+                                    <span class="text-danger" v-if="errors.selectedProductIDs">{{ errors.selectedProductIDs[0]}}</span>
                                 </div>
-                                <button type="submit" class="btn btn-primary w-100">Submit</button>
+                                <button type="submit" class="btn btn-primary w-100">Send Order</button>
                             </form>
                         </div>
                     </div>
@@ -343,17 +361,27 @@ import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
-const router = useRouter();
-const startDate = ref('');
-const endDate = ref('');
-const allStatus = ref([]);
-const status = ref('');
-const selectedcategoryId = ref('');
-const selectedStatus = ref(1);
 definePageMeta({
     middleware: 'is-logged-out',
 })
 
+
+const router = useRouter();
+const errors = ref({});
+const notifmsg = ref('');
+const startDate = ref('');
+const endDate = ref('');
+const allStatus = ref([]);
+const status = ref('');
+const userId = ref('');
+const query = ref('');
+const users = ref([]);
+const feachStoreNames = ref([]);
+const storeName = ref('');
+const currentBalance = ref(0);
+const selectedcategoryId = ref('');
+const selectedProductIDs = ref([]);
+const selectedStatus = ref(1);
 const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = 10;
@@ -380,6 +408,43 @@ const orderrow = reactive({
     order_date: '',
 
 });
+
+
+//Manual Order Submit
+const maualOrderSubmit = () => {
+
+    const formData = new FormData();
+    formData.append('userId', userId.value);
+    formData.append('selectedcategoryId', selectedcategoryId.value);
+    formData.append('selectedProductIDs', selectedProductIDs.value);
+
+    const headers = {
+        'Content-Type': 'multipart/form-data'
+    };
+    axios.post('/order/sendManualOrderAdmin', formData, { headers })
+        .then((res) => {
+            document.getElementById('formrest').reset();
+            success_noti();
+            fetchData(1);
+
+            query.value="";
+
+
+
+
+            $('#addorder').modal('hide');
+            router.push('/usermanagement/order-management');
+        }).catch(error => {
+            if (error.response && error.response.status === 422) {
+                errors.value = error.response.data.errors;
+            } else {
+                // Handle other types of errors here
+                console.error('An error occurred:', error);
+            }
+        });
+};
+
+
 
 const saveData = () => {
     const formData = new FormData();
@@ -426,7 +491,6 @@ const success_noti = () => {
 };
 
 const getDetails = (item) => {
-
     loading.value = true; // Set loading to true
     // Simulate a delay (3 seconds)
     setTimeout(() => {
@@ -494,6 +558,44 @@ watch(currentPage, (newPage) => {
     fetchData(newPage);
 });
 
+// Function to check if a product ID is in the selected list
+const isProductSelected = (productId) => {
+    return selectedProductIDs.value.includes(productId);
+};
+
+// Function to handle row clicks for selection/deselection
+const onRowClick = (productId) => {
+    if (isProductSelected(productId)) {
+        // Deselect if already selected
+        selectedProductIDs.value = selectedProductIDs.value.filter((id) => id !== productId);
+    } else {
+        // Select if not already selected
+        selectedProductIDs.value.push(productId);
+    }
+};
+
+// Function to handle checkbox clicks and prevent event propagation
+const toggleCheckbox = (event, productId) => {
+    event.stopPropagation(); // Prevent row click from being triggered by checkbox click
+
+    const isChecked = event.target.checked;
+
+    if (isChecked) {
+        if (!isProductSelected(productId)) {
+            selectedProductIDs.value.push(productId);
+        }
+    } else {
+        selectedProductIDs.value = selectedProductIDs.value.filter((id) => id !== productId);
+    }
+};
+
+
+const totalBuyingPrice = computed(() => {
+  return prodcutsArray.value
+    .filter((product) => isProductSelected(product.product_id)) // Select only products that are selected
+    .reduce((sum, product) => sum + parseFloat(product.buying_price), 0); // Sum the buying prices
+});
+
 const orderProcess = async () => {
     try {
         loading.value = true;
@@ -538,15 +640,6 @@ const showProducts = async () => {
 const filterData = () => {
     fetchData(1); // Reset to first page when search query changes
 };
-
-//Autocomlete
-// Reactive state variables
-const query = ref('');
-const users = ref([]);
-const feachStoreNames = ref([]);
-const userId = ref('');
-const storeName = ref('');
-const currentBalance = ref(0);
 
 // Function to fetch users from the API
 const fetchUsers = async (searchQuery) => {
