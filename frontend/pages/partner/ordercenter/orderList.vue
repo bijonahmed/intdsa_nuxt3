@@ -131,19 +131,24 @@
                                                     <td>{{ pro.product_qty }}</td>
                                                     <td class="">
                                                         <div class="btn-group">
-                                                            <nuxt-link :to="'details/' + pro.id"
-                                                                class="btn btn-secondary w-100 d-flex align-items-center"
-                                                                style="font-size: 12px;"><i
-                                                                    class="fa-regular fa-eye me-1"
-                                                                    style="font-size: 12px;"></i>Details</nuxt-link>
-                                                            <a @click="suc_mdal(pro)"
+                                                            <span class="d-none">
+                                                                <nuxt-link :to="'details/' + pro.id"
+                                                                    class="btn btn-secondary w-100 d-flex align-items-center"
+                                                                    style="font-size: 12px;"><i
+                                                                        class="fa-regular fa-eye me-1"
+                                                                        style="font-size: 12px;"></i>Details</nuxt-link>
+                                                            </span>
+                                                                
+                                                            <span v-if="pro.order_status == 1"> <a @click="suc_mdal(pro)"
                                                                 class="btn payment_ btn-primary w-100 d-flex align-items-center text-dark"
                                                                 style="font-size: 12px; color:black"><i
-                                                                    class="fa-brands fa-paypal me-1"></i>Payment</a>
-                                                            <nuxt-link to="transfer"
-                                                                class="btn btn-secondary w-100 d-flex align-items-center"
-                                                                style="font-size: 12px;"><i
-                                                                    class="fa-solid fa-arrow-turn-down"></i>Transfer</nuxt-link>
+                                                                    class="fa-brands fa-paypal me-1"></i>Payment</a></span>
+
+
+                                                            <span class="d-none"><nuxt-link to="transfer"
+                                                                    class="btn btn-secondary w-100 d-flex align-items-center"
+                                                                    style="font-size: 12px;"><i
+                                                                        class="fa-solid fa-arrow-turn-down"></i>Transfer</nuxt-link></span>
                                                         </div>
                                                     </td>
                                                 </tr>
